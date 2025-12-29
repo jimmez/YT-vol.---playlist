@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v94</title>
+<title>YT play/pause - v95</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<style>
+<style>s
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
 
   :root{ --player-aspect: 16/9; }
@@ -18,7 +18,7 @@
     display:inline-flex;align-items:center;justify-content:center;
     padding:6px 12px;border-radius:12px;font-weight:600;
     font-variant-numeric:tabular-nums;letter-spacing:0.3px;
-    min-width:90px;font-size:1.625rem;
+    min-width:120px;font-size:1.625rem;
     background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);
     box-shadow:inset 0 0 10px rgba(0,0,0,0.15);
   }
@@ -139,12 +139,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><h1>YT play/pause - v94</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
+    <div class="titleRow"><h1>YT play/pause - v95</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v94</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v95</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -436,7 +436,23 @@ function setTab(which){
   pagePlayer.classList.toggle("active", which!=="playlist"); pageUrls.classList.add("active");
   pagePlaylist.classList.toggle("active", which==="playlist");
 }
-tabPlayer.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI(); initFamousUI(); initPlaylistUI(); };
+tabPlayer.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
+
+// v95: autoload default playlist on first view
+(function autoloadDefaultPlaylist(){
+  try{
+    currentKind="playlists";
+    loadList(currentKind); renderList(); setTab("playlist");
+    initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
+    var k = storageKey("playlists");
+    var arr = JSON.parse(localStorage.getItem(k) || "[]");
+    var idx = -1;
+    for(var i=0;i<arr.length;i++){ if((arr[i].list||arr[i].id)==="PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K"){ idx=i; break; } }
+    if(idx===-1 && arr.length>0) idx = 0;
+    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); }
+  }catch(e){}
+})();
+ initFamousUI(); initPlaylistUI(); };
 tabUrls.onclick=function(){ setTab("urls"); };
 tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); initFamousUI(); };
 
@@ -1188,6 +1204,21 @@ function isPlayerHalf(){ return getPlayerSizeIndex()===2; }
 function applyPlayerHalf(flag){ setPlayerSizeIndex(flag?2:0); applyPlayerSize(); }
 function initPlayerHalfUI(){ initPlayerSizeUI(); }
 
+
+function ensureSeedPlaylists(){
+  var k = storageKey("playlists");
+  var seeds = ["https://youtube.com/playlist?list=PLo1zKrGK_Kqp2eitN_9MHV1dJBm789WpY&si=yOskNC31DxcFduJq", "https://youtube.com/playlist?list=PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K&si=vevLavosImkV5KjF"];
+  var arr = [];
+  try{ arr = JSON.parse(localStorage.getItem(k) || "[]"); }catch(e){ arr = []; }
+  var have = {};
+  arr.forEach(function(x){ if(x && (x.list||x.id)) have[x.list||x.id]=1; });
+  seeds.forEach(function(u){
+    var pid = parsePlaylistId(u);
+    if(pid && !have[pid]){ have[pid]=1; arr.push({isPlaylist:true, list:pid, title:pid}); }
+  });
+  try{ localStorage.setItem(k, JSON.stringify(arr)); }catch(e){}
+}
+
 // controls
 var plNextMainBtn=$("plNextMainBtn"); if(plNextMainBtn){ plNextMainBtn.onclick=function(){ nextPlaylistAndRestart(); }; }
 var plPrevMainBtn=$("plPrevMainBtn"); if(plPrevMainBtn){ plPrevMainBtn.onclick=function(){ prevPlaylistAndRestart(); }; }
@@ -1229,7 +1260,23 @@ document.addEventListener("keydown", function(e){
     }
   });
 
-  currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI(); initFamousUI(); initPlaylistUI();
+  currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
+
+// v95: autoload default playlist on first view
+(function autoloadDefaultPlaylist(){
+  try{
+    currentKind="playlists";
+    loadList(currentKind); renderList(); setTab("playlist");
+    initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
+    var k = storageKey("playlists");
+    var arr = JSON.parse(localStorage.getItem(k) || "[]");
+    var idx = -1;
+    for(var i=0;i<arr.length;i++){ if((arr[i].list||arr[i].id)==="PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K"){ idx=i; break; } }
+    if(idx===-1 && arr.length>0) idx = 0;
+    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); }
+  }catch(e){}
+})();
+ initFamousUI(); initPlaylistUI();
 })();
 </script>
 <script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();</script>
