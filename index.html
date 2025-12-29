@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v86</title>
+<title>YT play/pause - v88</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   :root{
@@ -119,12 +119,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <h1>YT play/pause - v86</h1>
+    <h1>YT play/pause - v88</h1>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v86</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v88</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -173,7 +173,9 @@
       <button id="resetLengthsBtn" class="btn-main" title="Reset play &amp; pause to 0:00">Reset</button>
       <button id="nextSegmentBtn" class="btn-main" title="Jump to next segment">Next segment</button>
     
-      <button id="plNextMainBtn" class="btn-main" style="min-width:200px" title="Play next track in current playlist">Next in playlist</button>
+      
+      <button id="plPrevMainBtn" class="btn-main" style="min-width:180px" title="Play previous track in current playlist">Prev in playlist</button>
+<button id="plNextMainBtn" class="btn-main" style="min-width:200px" title="Play next track in current playlist">Next in playlist</button>
 </div>
 
     <div class="row">
@@ -412,7 +414,7 @@ function setTab(which){
   pagePlayer.classList.toggle("active", which!=="playlist"); pageUrls.classList.add("active");
   pagePlaylist.classList.toggle("active", which==="playlist");
 }
-tabPlayer.onclick=function(){ setTab("playlist"); initDipUI(); initPlaylistUI(); initFamousUI(); initPlaylistUI(); };
+tabPlayer.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initFamousUI(); initPlaylistUI(); };
 tabUrls.onclick=function(){ setTab("urls"); };
 tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); initFamousUI(); };
 
@@ -805,6 +807,17 @@ function advancePlaylistIfNeeded(){
 }
 
 // v83: robust playlist helpers
+
+function updatePlaylistControlsVisibility(){
+  var hasPL = isPlaylistLoaded();
+  var ids = ["plNextMainBtn","plPrevMainBtn","plNextBtn"];
+  ids.forEach(function(id){
+    var el = $(id);
+    if(!el) return;
+    el.style.display = hasPL ? "" : "none";
+  });
+}
+
 function isPlaylistLoaded(){
   try{
     if(!player) return false;
@@ -895,6 +908,7 @@ function ensurePlayer(id, start){
            if(typeof player.setShuffle==="function") player.setShuffle(isPlShuffle());
            if(typeof player.setLoop==="function") player.setLoop(isPlLoop());
            try{ player.playVideo && player.playVideo(); }catch(e){}
+           try{ updatePlaylistControlsVisibility(); }catch(e){}
       }
       catch(e){ player.loadVideoById({videoId:id, startSeconds:start||0}); }
     }else{
@@ -1006,17 +1020,59 @@ $("nextSegmentBtn").onclick = function(){
 
 
 function nextPlaylistAndRestart(){
+  try{ updatePlaylistControlsVisibility(); }catch(e){}
   try{ advancePlaylistSmart(); }catch(e){}
   try{ stopBar(); }catch(e){}
-  // Force next segment to begin with PLAY
+  try{ primeBarPlay(); }catch(e){}
   var prevPF = isPauseFirst && isPauseFirst();
   try{ setPauseFirst && setPauseFirst(false); }catch(e){}
-  // Restart the stepper fresh
   try{
     stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers();
     startPlayStepper();
   }catch(e){}
-  // Restore Pause First UI toggle without flipping stored state unless it was previously on
+  try{
+    if(prevPF){ setPauseFirst(true); var t=$("pauseFirstToggle"); if(t) t.checked=true; }
+  }catch(e){}
+}
+
+function primeBarPlay(){
+  try{
+    var el=$("bargraphFill");
+    if(el){ el.classList.remove("pause"); el.style.width="100%"; }
+  }catch(e){}
+}
+
+function prevPlaylistSmart(){
+  if(!isPlaylistMode()) return;
+  var len = playlistLength();
+  if(len <= 0){ try{ if(player && player.previousVideo) player.previousVideo(); }catch(e){}; return; }
+  var cur = currentPlaylistIndex();
+  var prevIdx = cur;
+  if(isPlShuffle()){
+    for(var guard=0; guard<5; guard++){
+      var r = Math.floor(Math.random()*len);
+      if(r !== cur){ prevIdx = r; break; }
+    }
+    if(prevIdx === cur) prevIdx = (cur-1+len)%len;
+  }else{
+    prevIdx = (cur-1+len)%len;
+  }
+  try{
+    if(typeof player.playVideoAt === "function"){ player.playVideoAt(prevIdx); }
+    else if(typeof player.previousVideo === "function"){ player.previousVideo(); }
+  }catch(e){}
+}
+function prevPlaylistAndRestart(){
+  try{ updatePlaylistControlsVisibility(); }catch(e){}
+  try{ prevPlaylistSmart(); }catch(e){}
+  try{ stopBar(); }catch(e){}
+  try{ primeBarPlay(); }catch(e){}
+  var prevPF = isPauseFirst && isPauseFirst();
+  try{ setPauseFirst && setPauseFirst(false); }catch(e){}
+  try{
+    stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers();
+    startPlayStepper();
+  }catch(e){}
   try{
     if(prevPF){ setPauseFirst(true); var t=$("pauseFirstToggle"); if(t) t.checked=true; }
   }catch(e){}
@@ -1024,6 +1080,7 @@ function nextPlaylistAndRestart(){
 
 // controls
 var plNextMainBtn=$("plNextMainBtn"); if(plNextMainBtn){ plNextMainBtn.onclick=function(){ nextPlaylistAndRestart(); }; }
+var plPrevMainBtn=$("plPrevMainBtn"); if(plPrevMainBtn){ plPrevMainBtn.onclick=function(){ prevPlaylistAndRestart(); }; }
 var plNextBtn=$("plNextBtn"); if(plNextBtn){ plNextBtn.onclick=function(){ nextPlaylistAndRestart(); }; }
 $("playBtn").onclick=function(){ startPlayStepper(); };
 $("pauseBtn").onclick=function(){ pauseNow(); };
@@ -1062,8 +1119,9 @@ document.addEventListener("keydown", function(e){
     }
   });
 
-  setTab("playlist"); initDipUI(); initPlaylistUI(); initFamousUI(); initPlaylistUI();
+  currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initFamousUI(); initPlaylistUI();
 })();
 </script>
+<script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();</script>
 </body>
 </html>
