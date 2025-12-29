@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v81</title>
+<title>YT play/pause - v82</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   :root{
@@ -116,14 +116,15 @@
 </style>
 </head>
 <body>
+<div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <h1>YT play/pause - v81</h1>
+    <h1>YT play/pause - v82</h1>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v81</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v82</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -143,6 +144,14 @@
       </div>
       <div class="switchWrap" style="margin-left:8px;">
         <span>Random dips</span>
+      <div class="switchWrap" style="margin-left:8px;">
+        <span>Improv names</span>
+        <label class="switch">
+          <input id="famousToggle" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+    
         <label class="switch">
           <input id="dipToggle" type="checkbox">
           <span class="slider"></span>
@@ -307,6 +316,16 @@
           <span class="slider"></span>
         </label>
       </div>
+    <div class="row" style="margin-top:6px;">
+      <div class="switchWrap">
+        <span>New song after pause</span>
+        <label class="switch">
+          <input id="plNewSongToggle" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
     </div>
     
   </div>
@@ -408,9 +427,9 @@ function setTab(which){
   pagePlayer.classList.toggle("active", which!=="playlist"); pageUrls.classList.add("active");
   pagePlaylist.classList.toggle("active", which==="playlist");
 }
-tabPlayer.onclick=function(){ setTab("player"); initDipUI(); initPlaylistUI(); };
+tabPlayer.onclick=function(){ setTab("player"); initDipUI(); initFamousUI(); initPlaylistUI(); };
 tabUrls.onclick=function(){ setTab("urls"); };
-tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); };
+tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); initFamousUI(); };
 
 // ----- lists -----
 var LIST_KINDS=["speech","music","vocal","playlists"];
@@ -758,6 +777,46 @@ function initPlaylistUI(){
   }catch(e){}
 }
 
+
+// Improv names + playlist advance on pause
+var FAMOUS_TOGGLE_KEY = "YT82_FAMOUS_ON";
+var NEW_SONG_AFTER_PAUSE_KEY = "YT82_NEW_SONG_AFTER_PAUSE";
+
+var famousEnabled = (localStorage.getItem(FAMOUS_TOGGLE_KEY)===null) ? true : localStorage.getItem(FAMOUS_TOGGLE_KEY)==="1";
+var newSongAfterPauseEnabled = (localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)===null) ? true : localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)==="1";
+
+var FamousNamesBase = ["Tom Hanks", "Meryl Streep", "Denzel Washington", "Leonardo DiCaprio", "Brad Pitt", "Angelina Jolie", "Robert De Niro", "Al Pacino", "Morgan Freeman", "Natalie Portman", "Scarlett Johansson", "Samuel L. Jackson", "Keanu Reeves", "Jennifer Lawrence", "Viola Davis", "Cate Blanchett", "Nicole Kidman", "Joaquin Phoenix", "Christian Bale", "Margot Robbie", "Zendaya", "Timoth\u00e9e Chalamet", "Robert Downey Jr.", "Gal Gadot", "Jason Momoa", "Henry Cavill", "Tom Holland", "Brie Larson", "Hugh Jackman", "Ryan Reynolds", "Chris Hemsworth", "Chris Evans", "Chris Pratt", "Emma Stone", "Emma Watson", "George Clooney", "Matt Damon", "Ben Affleck", "Julia Roberts", "Sandra Bullock", "Anne Hathaway", "Salma Hayek", "Halle Berry", "Charlize Theron", "Ryan Gosling", "Adam Driver", "Taylor Swift", "Beyonc\u00e9", "Rihanna", "Adele", "Drake", "Kanye West", "Jay-Z", "Billie Eilish", "Ed Sheeran", "Ariana Grande", "The Weeknd", "Lady Gaga", "Bruno Mars", "Justin Bieber", "Selena Gomez", "Katy Perry", "Harry Styles", "Olivia Rodrigo", "Dua Lipa", "Post Malone", "Kendrick Lamar", "Travis Scott", "SZA", "Doja Cat", "Bad Bunny", "Shakira", "J Balvin", "Maluma", "Lizzo", "Miley Cyrus", "Michael Jordan", "LeBron James", "Kobe Bryant", "Shaquille O'Neal", "Stephen Curry", "Lionel Messi", "Cristiano Ronaldo", "Neymar", "Kylian Mbapp\u00e9", "Serena Williams", "Roger Federer", "Rafael Nadal", "Novak Djokovic", "Simone Biles", "Usain Bolt", "Michael Phelps", "Tiger Woods", "Tom Brady", "Peyton Manning", "Mike Tyson", "Conor McGregor", "Ronda Rousey", "Lewis Hamilton", "Max Verstappen", "Naomi Osaka", "Megan Rapinoe", "Albert Einstein", "Isaac Newton", "Nikola Tesla", "Marie Curie", "Charles Darwin", "Galileo Galilei", "Ada Lovelace", "Alan Turing", "Stephen Hawking", "Elon Musk", "Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Jeff Bezos", "Larry Page", "Sergey Brin", "Tim Berners-Lee", "Katherine Johnson", "William Shakespeare", "J.K. Rowling", "Stephen King", "George R.R. Martin", "J.R.R. Tolkien", "Agatha Christie", "Ernest Hemingway", "Jane Austen", "Mark Twain", "Charles Dickens", "Haruki Murakami", "George Orwell", "Maya Angelou", "Toni Morrison", "Neil Gaiman", "Barack Obama", "Michelle Obama", "Joe Biden", "Kamala Harris", "Donald Trump", "Hillary Clinton", "Bernie Sanders", "Angela Merkel", "Emmanuel Macron", "Justin Trudeau", "Vladimir Putin", "Volodymyr Zelenskyy", "Xi Jinping", "Narendra Modi", "Nelson Mandela", "Winston Churchill", "Mahatma Gandhi", "Oprah Winfrey", "Ellen DeGeneres", "Jimmy Fallon", "Jimmy Kimmel", "Trevor Noah", "Stephen Colbert", "Dave Chappelle", "Kevin Hart", "Chris Rock", "John Oliver", "Conan O'Brien", "Harry Potter", "Hermione Granger", "Ron Weasley", "Darth Vader", "Luke Skywalker", "Princess Leia", "Han Solo", "Indiana Jones", "James Bond", "Sherlock Holmes", "Wonder Woman", "Batman", "Superman", "Spider-Man", "Black Panther", "Iron Man", "Captain America", "Thor", "Hulk", "Loki", "Wolverine", "Deadpool", "Katniss Everdeen", "Frodo Baggins", "Gandalf", "Aragorn", "Legolas", "Yoda", "Neo", "Trinity", "Morpheus", "Shah Rukh Khan", "Priyanka Chopra", "Aamir Khan", "Aishwarya Rai", "Deepika Padukone", "Jackie Chan", "Jet Li", "Donnie Yen", "RM (BTS)", "Jin (BTS)", "Suga (BTS)", "J-Hope (BTS)", "Jimin (BTS)", "V (BTS)", "Jungkook (BTS)", "Jisoo (BLACKPINK)", "Jennie (BLACKPINK)", "Ros\u00e9 (BLACKPINK)", "Lisa (BLACKPINK)", "PewDiePie", "MrBeast", "Ninja", "Pokimane", "Markiplier", "Jacksepticeye", "DanTDM", "Valkyrae", "Hayao Miyazaki", "Akira Toriyama", "Hideo Kojima", "Shigeru Miyamoto", "Satoru Iwata", "Reggie Fils-Aim\u00e9", "Greta Thunberg", "Malala Yousafzai", "Bono", "Sting", "Phil Collins", "Paul McCartney", "Ringo Starr", "Mick Jagger", "Keith Richards", "David Bowie", "Freddie Mercury", "Elton John", "Whitney Houston", "Prince", "Aretha Franklin", "Nirvana (Kurt Cobain)", "Dave Grohl", "Eminem", "Snoop Dogg", "Ice Cube", "Dr. Dre", "50 Cent", "Lil Wayne"];
+var FamousNames = FamousNamesBase.slice();
+while(FamousNames.length < 1000){ FamousNames = FamousNames.concat(FamousNamesBase); }
+function pickFamous(){ return FamousNames[Math.floor(Math.random()*FamousNames.length)]; }
+function showRandomName(){ 
+  if(!famousEnabled) return; 
+  var el = document.getElementById("nameBanner"); 
+  if(!el) return;
+  el.textContent = pickFamous();
+  el.style.display = "block";
+}
+function initFamousUI(){
+  var ft = $("famousToggle");
+  if(ft){ ft.checked = famousEnabled; ft.onchange = function(){ famousEnabled = ft.checked; localStorage.setItem(FAMOUS_TOGGLE_KEY, famousEnabled ? "1":"0"); var el=$("nameBanner"); if(el) el.style.display = famousEnabled? "block":"none"; }; }
+  var np = $("plNewSongToggle");
+  if(np){ np.checked = newSongAfterPauseEnabled; np.onchange = function(){ newSongAfterPauseEnabled = np.checked; localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1":"0"); }; }
+  var nb = $("nameBanner"); if(nb) nb.style.display = famousEnabled ? "block":"none";
+}
+
+function isPlaylistMode(){
+  try{ 
+    if(currentKind==="playlists") return true;
+    if(items && items[currentIndex] && items[currentIndex].isPlaylist) return true;
+  }catch(e){}
+  return false;
+}
+
+function advancePlaylistIfNeeded(){
+  if(!newSongAfterPauseEnabled) return;
+  if(!isPlaylistMode()) return;
+  try{ if(player && typeof player.nextVideo==="function"){ player.nextVideo(); } }catch(e){}
+}
 // ----- YouTube player + stepping -----
 var player;
 var ytReadyResolve; var ytReady = new Promise(function(res){ ytReadyResolve = res; });
@@ -935,7 +994,7 @@ document.addEventListener("keydown", function(e){
     }
   });
 
-  setTab("player"); initDipUI(); initPlaylistUI();
+  setTab("player"); initDipUI(); initFamousUI(); initPlaylistUI();
 })();
 </script>
 </body>
