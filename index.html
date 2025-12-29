@@ -2,9 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v88</title>
+<title>YT play/pause - v89</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
+  .bigCounter{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:6px 12px;border-radius:12px;font-weight:800;
+    font-variant-numeric:tabular-nums;letter-spacing:0.5px;
+    min-width:90px;font-size:1.25rem;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);
+    box-shadow:inset 0 0 10px rgba(0,0,0,0.15);
+  }
+  .bigCounter.mode-play{color:#00d230;}
+  .bigCounter.mode-pause{color:#ff5252;}
+
   :root{
     --bg:#0b0b0c;
     --fg:#f5f7fa;
@@ -119,12 +130,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <h1>YT play/pause - v88</h1>
+    <h1>YT play/pause - v89</h1>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v88</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v89</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -158,6 +169,7 @@
         </label>
       </div>
       <button id="dipSettingsBtn" class="btn-icon" title="Adjust dip settings">Dip settings</button>
+      <span id="bigCountdown" class="bigCounter mode-play">00:00</span>
     </div>
 
     <!-- Row 2: transport -->
@@ -615,6 +627,17 @@ function startBar(totalSec, isPause){
   function tick(){
     var elapsed = (performance.now() - barStart)/1000;
     var remain = barTotal - elapsed;
+    // Update big countdown
+    try{
+      var bc = $("bigCountdown");
+      if(bc){
+        var secs = Math.max(0, Math.ceil(remain));
+        bc.textContent = fmtSec(secs);
+        bc.classList.toggle("mode-pause", !!isPause);
+        bc.classList.toggle("mode-play", !isPause);
+      }
+    }catch(e){}
+
     if(remain <= 0){
       barEl.style.width = "0%";
       barRAF = 0;
@@ -1124,4 +1147,5 @@ document.addEventListener("keydown", function(e){
 </script>
 <script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();</script>
 </body>
-</html>
+</html
+  try{ var bc=$("bigCountdown"); if(bc){ bc.textContent="00:00"; } }catch(e){}>
