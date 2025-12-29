@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v89</title>
+<title>YT play/pause - v91</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .bigCounter{
     display:inline-flex;align-items:center;justify-content:center;
-    padding:6px 12px;border-radius:12px;font-weight:800;
-    font-variant-numeric:tabular-nums;letter-spacing:0.5px;
-    min-width:90px;font-size:1.25rem;
+    padding:6px 12px;border-radius:12px;font-weight:600;
+    font-variant-numeric:tabular-nums;letter-spacing:0.3px;
+    min-width:90px;font-size:1.625rem;
     background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);
     box-shadow:inset 0 0 10px rgba(0,0,0,0.15);
   }
@@ -130,12 +130,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <h1>YT play/pause - v89</h1>
+    <h1>YT play/pause - v91</h1>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v89</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v91</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -951,8 +951,10 @@ function startSegCountdown(mode, seconds){
   var elPlay=$("playCountdown"), elPause=$("pauseCountdown");
   if(mode==="play"){ elPlay.style.display="inline-flex"; elPause.style.display="none"; elPlay.textContent="Play: "+fmtSec(seconds); }
   else { elPause.style.display="inline-flex"; elPlay.style.display="none"; elPause.textContent="Pause: "+fmtSec(seconds); }
+  try{ var bc=$("bigCountdown"); if(bc){ bc.textContent = fmtSec(seconds); bc.classList.toggle("mode-pause", mode==="pause"); bc.classList.toggle("mode-play", mode==="play"); } }catch(e){}
   var t=seconds; segTimer=setInterval(function(){ t--; if(t<0){ clearSegTimer(); return; }
     if(mode==="play") elPlay.textContent="Play: "+fmtSec(t); else elPause.textContent="Pause: "+fmtSec(t);
+    try{ var bc=$("bigCountdown"); if(bc){ bc.textContent = fmtSec(t); bc.classList.toggle("mode-pause", mode==="pause"); bc.classList.toggle("mode-play", mode==="play"); } }catch(e){}
   }, 1000);
 }
 
@@ -1052,6 +1054,7 @@ function nextPlaylistAndRestart(){
   try{
     stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers();
     startPlayStepper();
+    try{ startSegCountdown("play", Math.max(1,getPlaySec())); }catch(e){}
   }catch(e){}
   try{
     if(prevPF){ setPauseFirst(true); var t=$("pauseFirstToggle"); if(t) t.checked=true; }
@@ -1095,6 +1098,7 @@ function prevPlaylistAndRestart(){
   try{
     stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers();
     startPlayStepper();
+    try{ startSegCountdown("play", Math.max(1,getPlaySec())); }catch(e){}
   }catch(e){}
   try{
     if(prevPF){ setPauseFirst(true); var t=$("pauseFirstToggle"); if(t) t.checked=true; }
