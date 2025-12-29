@@ -2,9 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v91</title>
+<title>YT play/pause - v93</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
+  :root{ --player-aspect: 16/9; }
+  .playerWrap iframe{ aspect-ratio: var(--player-aspect, 16/9); }
+  .titleRow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .nameBannerHead{font-weight:700;font-size:14px;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;min-height:30px;display:flex;align-items:center;}
+  .btn-toggle{border:1px solid #2b313b;background:#151922;color:#e5e7eb;border-radius:10px;padding:8px 10px;font-size:12px;cursor:pointer;}
+  .btn-toggle.active{outline:1px solid #3b82f6;background:#0f1525;}
+
   .bigCounter{
     display:inline-flex;align-items:center;justify-content:center;
     padding:6px 12px;border-radius:12px;font-weight:600;
@@ -130,12 +137,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <h1>YT play/pause - v91</h1>
+    <div class="titleRow"><h1>YT play/pause - v93</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v91</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v93</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -170,6 +177,7 @@
       </div>
       <button id="dipSettingsBtn" class="btn-icon" title="Adjust dip settings">Dip settings</button>
       <span id="bigCountdown" class="bigCounter mode-play">00:00</span>
+      <button id="playerSizeBtn" class="btn-toggle" title="Toggle half-height player">Player size</button>
     </div>
 
     <!-- Row 2: transport -->
@@ -426,7 +434,7 @@ function setTab(which){
   pagePlayer.classList.toggle("active", which!=="playlist"); pageUrls.classList.add("active");
   pagePlaylist.classList.toggle("active", which==="playlist");
 }
-tabPlayer.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initFamousUI(); initPlaylistUI(); };
+tabPlayer.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI(); initFamousUI(); initPlaylistUI(); };
 tabUrls.onclick=function(){ setTab("urls"); };
 tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); initFamousUI(); };
 
@@ -801,10 +809,7 @@ while(FamousNames.length < 1000){ FamousNames = FamousNames.concat(FamousNamesBa
 function pickFamous(){ return FamousNames[Math.floor(Math.random()*FamousNames.length)]; }
 function showRandomName(){ 
   if(!famousEnabled) return; 
-  var el = document.getElementById("nameBanner"); 
-  if(!el) return;
-  el.textContent = pickFamous();
-  el.style.display = "block";
+  setNameBannerText(pickFamous());
 }
 function initFamousUI(){
   var ft = $("famousToggle");
@@ -1054,7 +1059,7 @@ function nextPlaylistAndRestart(){
   try{
     stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers();
     startPlayStepper();
-    try{ startSegCountdown("play", Math.max(1,getPlaySec())); }catch(e){}
+    try{ forceStartPlayBar(); }catch(e){}
   }catch(e){}
   try{
     if(prevPF){ setPauseFirst(true); var t=$("pauseFirstToggle"); if(t) t.checked=true; }
@@ -1098,12 +1103,85 @@ function prevPlaylistAndRestart(){
   try{
     stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers();
     startPlayStepper();
-    try{ startSegCountdown("play", Math.max(1,getPlaySec())); }catch(e){}
+    try{ forceStartPlayBar(); }catch(e){}
   }catch(e){}
   try{
     if(prevPF){ setPauseFirst(true); var t=$("pauseFirstToggle"); if(t) t.checked=true; }
   }catch(e){}
 }
+
+
+var PLAYER_HALF_KEY="YT92_PLAYER_HALF";
+function isPlayerHalf(){ return localStorage.getItem(PLAYER_HALF_KEY)==="1"; }
+function applyPlayerHalf(flag){
+  document.documentElement.style.setProperty('--player-aspect', flag ? '32/9' : '16/9');
+  var b=$("playerHalfBtn"); if(b){ b.classList.toggle("active", !!flag); }
+}
+function initPlayerHalfUI(){
+  var b=$("playerHalfBtn");
+  if(b){
+    applyPlayerHalf(isPlayerHalf());
+    b.onclick=function(){
+      var v=!isPlayerHalf(); localStorage.setItem(PLAYER_HALF_KEY, v?"1":"0");
+      applyPlayerHalf(v);
+    };
+  }else{
+    applyPlayerHalf(isPlayerHalf());
+  }
+}
+
+// Prefer header banner for names if present
+function setNameBannerText(txt){
+  var el = $("nameBannerHeader") || $("nameBanner");
+  if(!el) return;
+  el.textContent = txt;
+  el.style.display = "block";
+}
+
+function forceStartPlayBar(){
+  try{ stopBar(); }catch(e){}
+  try{ startSegCountdown("play", Math.max(1,getPlaySec())); }catch(e){}
+  try{ startBar(Math.max(1,getPlaySec()), false); }catch(e){}
+}
+/* ensure after switching playlist tracks, play segment & bar begin immediately */
+
+var PLAYER_SIZE_KEY="YT93_PLAYER_SIZE";
+var PLAYER_SIZES=[
+  {label:"Full", aspect:"16/9"},
+  {label:"75%",  aspect:"64/27"}, // ~0.75 height
+  {label:"Half", aspect:"32/9"}   // ~0.5 height
+];
+function getPlayerSizeIndex(){
+  var v = parseInt(localStorage.getItem(PLAYER_SIZE_KEY)||"0",10);
+  if(isNaN(v) || v<0 || v>=PLAYER_SIZES.length) v=0;
+  return v;
+}
+function setPlayerSizeIndex(v){
+  localStorage.setItem(PLAYER_SIZE_KEY, String(v));
+}
+function applyPlayerSize(){
+  var idx = getPlayerSizeIndex();
+  var conf = PLAYER_SIZES[idx];
+  document.documentElement.style.setProperty('--player-aspect', conf.aspect);
+  var b=$("playerSizeBtn"); if(b){ b.classList.add("active"); b.textContent = "Player size: " + conf.label; }
+}
+function cyclePlayerSize(){
+  var idx = getPlayerSizeIndex();
+  idx = (idx+1) % PLAYER_SIZES.length;
+  setPlayerSizeIndex(idx);
+  applyPlayerSize();
+}
+function initPlayerSizeUI(){
+  var b=$("playerSizeBtn");
+  if(b){
+    b.onclick = cyclePlayerSize;
+  }
+  applyPlayerSize();
+}
+// Back-compat shim in case older code references these
+function isPlayerHalf(){ return getPlayerSizeIndex()===2; }
+function applyPlayerHalf(flag){ setPlayerSizeIndex(flag?2:0); applyPlayerSize(); }
+function initPlayerHalfUI(){ initPlayerSizeUI(); }
 
 // controls
 var plNextMainBtn=$("plNextMainBtn"); if(plNextMainBtn){ plNextMainBtn.onclick=function(){ nextPlaylistAndRestart(); }; }
@@ -1146,7 +1224,7 @@ document.addEventListener("keydown", function(e){
     }
   });
 
-  currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initFamousUI(); initPlaylistUI();
+  currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI(); initFamousUI(); initPlaylistUI();
 })();
 </script>
 <script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();</script>
