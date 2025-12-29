@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v82</title>
+<title>YT play/pause - v83</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   :root{
@@ -119,12 +119,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <h1>YT play/pause - v82</h1>
+    <h1>YT play/pause - v83</h1>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v82</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v83</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -808,6 +808,7 @@ function isPlaylistMode(){
   try{ 
     if(currentKind==="playlists") return true;
     if(items && items[currentIndex] && items[currentIndex].isPlaylist) return true;
+    if(isPlaylistLoaded()) return true;
   }catch(e){}
   return false;
 }
@@ -817,6 +818,65 @@ function advancePlaylistIfNeeded(){
   if(!isPlaylistMode()) return;
   try{ if(player && typeof player.nextVideo==="function"){ player.nextVideo(); } }catch(e){}
 }
+
+// v83: robust playlist helpers
+function isPlaylistLoaded(){
+  try{
+    if(!player) return false;
+    if(typeof player.getPlaylist === "function"){
+      var pl = player.getPlaylist();
+      return Array.isArray(pl) && pl.length > 0;
+    }
+  }catch(e){}
+  return false;
+}
+function playlistLength(){
+  try{
+    if(player && typeof player.getPlaylist === "function"){
+      var pl = player.getPlaylist();
+      if(Array.isArray(pl)) return pl.length;
+    }
+  }catch(e){}
+  return 0;
+}
+function currentPlaylistIndex(){
+  try{
+    if(player && typeof player.getPlaylistIndex === "function"){
+      return player.getPlaylistIndex();
+    }
+  }catch(e){}
+  return -1;
+}
+function advancePlaylistSmart(){
+  // Decide next track for "new song after pause"
+  if(!isPlaylistMode()) return;
+  // Prefer random if shuffle is on; otherwise go sequential next.
+  var len = playlistLength();
+  if(len <= 0){
+    try{ if(player && player.nextVideo) player.nextVideo(); }catch(e){}
+    return;
+  }
+  var cur = currentPlaylistIndex();
+  var nextIdx = cur;
+  if(isPlShuffle()){
+    // pick a different random index
+    for(var guard=0; guard<5; guard++){
+      var r = Math.floor(Math.random()*len);
+      if(r !== cur){ nextIdx = r; break; }
+    }
+    if(nextIdx === cur) nextIdx = (cur+1) % len;
+  }else{
+    nextIdx = (cur+1) % len;
+  }
+  try{
+    if(typeof player.playVideoAt === "function"){
+      player.playVideoAt(nextIdx);
+    }else if(typeof player.nextVideo === "function"){
+      player.nextVideo();
+    }
+  }catch(e){}
+}
+
 // ----- YouTube player + stepping -----
 var player;
 var ytReadyResolve; var ytReady = new Promise(function(res){ ytReadyResolve = res; });
