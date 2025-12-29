@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v83</title>
+<title>YT play/pause - v84</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   :root{
@@ -119,12 +119,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <h1>YT play/pause - v83</h1>
+    <h1>YT play/pause - v84</h1>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v83</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v84</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -174,27 +174,6 @@
       <button id="nextSegmentBtn" class="btn-main" title="Jump to next segment">Next</button>
     </div>
 
-    <!-- Row 4: time boxes (play/pause) -->
-    <div class="row" style="margin-top:6px;align-items:flex-end;">
-      <div class="row nowrap">
-        <div>
-          <label>Play (mm:ss)</label>
-          <div class="row">
-            <input id="playMin" type="number" min="0" value="0">
-            <span>:</span>
-            <input id="playSec" type="number" min="0" value="40">
-          </div>
-        </div>
-        <div>
-          <label>Pause (mm:ss)</label>
-          <div class="row">
-            <input id="pauseMin" type="number" min="0" value="0">
-            <span>:</span>
-            <input id="pauseSec" type="number" min="0" value="40">
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="row">
       <span id="playCountdown" class="badge" style="display:none;">Play: 0:00</span>
       <span id="pauseCountdown" class="badge" style="display:none;">Pause: 0:00</span>
@@ -324,6 +303,10 @@
           <span class="slider"></span>
         </label>
       </div>
+    <div class="row" style="margin-top:6px;">
+      <button id="plNextBtn" class="btn-icon btn-lg btn-wide" title="Play next track in playlist">Next track</button>
+    </div>
+
     </div>
 
     </div>
@@ -894,7 +877,8 @@ function ensurePlayer(id, start){
       events:{ onStateChange:function(e){
         if(e.data===YT.PlayerState.PLAYING){
           pauseOverlay.style.display="none"; setPlayUI(true,false);
-          if(!wmShown){ wmShown=true; wm.style.opacity="1"; setTimeout(function(){ wm.style.opacity="0"; }, 7000); }
+          if(!wmShown){ wmShown=true; wm.style.opacity="1"; setTimeout(function(){
+      wm.style.opacity="0"; }, 7000); }
         }else if(e.data===YT.PlayerState.PAUSED){
           if(dimToggle.checked) pauseOverlay.style.display="block"; setPlayUI(false,true); if(!inPauseSegment){ stopBar(); }
         }else if(e.data===YT.PlayerState.ENDED){
@@ -979,7 +963,9 @@ function startPlayStepper(){
     startSegCountdown("pause", pauseS);
     startBar(pauseS, true);   // red
     stepTimeoutPause = setTimeout(function(){
-      if(randomToggle.checked){ var ni=nextIndex(); if(ni>=0) ensurePlayer(items[ni].id, items[ni].start||0); currentIndex=ni; }
+      if(!isPlaylistMode() && randomToggle.checked){ var ni=nextIndex(); if(ni>=0) ensurePlayer(items[ni].id, items[ni].start||0); currentIndex=ni; }
+      
+      if(newSongAfterPauseEnabled) advancePlaylistSmart();
       cyclePlay();
     }, pauseS*1000);
   }
@@ -1017,6 +1003,7 @@ $("nextSegmentBtn").onclick = function(){
 };
 
 // controls
+var plNextBtn=$("plNextBtn"); if(plNextBtn){ plNextBtn.onclick=function(){ advancePlaylistSmart(); }; }
 $("playBtn").onclick=function(){ startPlayStepper(); };
 $("pauseBtn").onclick=function(){ pauseNow(); };
 $("nextBtn").onclick=function(){ var ni=nextIndex(); if(ni>=0) loadByIndex(ni,true); };
