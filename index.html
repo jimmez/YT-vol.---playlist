@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v84</title>
+<title>YT play/pause - v85</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   :root{
@@ -119,12 +119,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <h1>YT play/pause - v84</h1>
+    <h1>YT play/pause - v85</h1>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v84</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v85</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -171,8 +171,10 @@
     <!-- Row 3: big Reset + Next (segment) -->
     <div class="row" style="margin-top:6px;">
       <button id="resetLengthsBtn" class="btn-main" title="Reset play &amp; pause to 0:00">Reset</button>
-      <button id="nextSegmentBtn" class="btn-main" title="Jump to next segment">Next</button>
-    </div>
+      <button id="nextSegmentBtn" class="btn-main" title="Jump to next segment">Next segment</button>
+    
+      <button id="plNextMainBtn" class="btn-main" style="min-width:200px" title="Play next track in current playlist">Next in playlist</button>
+</div>
 
     <div class="row">
       <span id="playCountdown" class="badge" style="display:none;">Play: 0:00</span>
@@ -1003,6 +1005,7 @@ $("nextSegmentBtn").onclick = function(){
 };
 
 // controls
+var plNextMainBtn=$("plNextMainBtn"); if(plNextMainBtn){ plNextMainBtn.onclick=function(){ advancePlaylistSmart(); }; }
 var plNextBtn=$("plNextBtn"); if(plNextBtn){ plNextBtn.onclick=function(){ advancePlaylistSmart(); }; }
 $("playBtn").onclick=function(){ startPlayStepper(); };
 $("pauseBtn").onclick=function(){ pauseNow(); };
