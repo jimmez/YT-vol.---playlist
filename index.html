@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v95</title>
+<title>YT play/pause - v97</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<style>s
+<style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
 
   :root{ --player-aspect: 16/9; }
@@ -343,11 +343,15 @@
     <h2>Audio dip settings</h2>
     <div class="row">
       <div>
-        <label>Dip length (seconds): min</label>
+        <label>Dip length: min</label>
         <div class="row">
           <input id="dipLenMin" type="number" min="1" value="1">
           <span>to</span>
           <input id="dipLenMax" type="number" min="1" value="4">
+          <select id="dipLenUnit" style="padding:8px 10px;border-radius:10px;border:1px solid #2a2d33;background:#0f1115;color:var(--fg);outline:none;font-size:14px;">
+            <option value="sec">sec</option>
+            <option value="ms">ms</option>
+          </select>
         </div>
       </div>
       <div>
@@ -362,8 +366,26 @@
         <label>Dip volume percent (0=mute, 100=no change)</label>
         <input id="dipVolumePct" type="number" min="0" max="100" value="10">
       </div>
+      <div class="switchWrap" style="min-width:110px;">
+        <span>Invert</span>
+        <label class="switch">
+          <input id="dipInvertToggle" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="switchWrap" style="min-width:110px;">
+        <span>Soft fade</span>
+        <label class="switch">
+          <input id="dipSoftToggle" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div>
+        <label>Fade ms</label>
+        <input id="dipFadeMs" type="number" min="0" max="10000" value="800">
+      </div>
     </div>
-    <div class="banner tiny">During <b>Play</b> segments, the audio briefly reduces (or mutes) for a random length between min/max, at random gaps between min/max. Uses YouTube setVolume/mute.</div>
+    <div class="banner tiny">During <b>Play</b> segments, the audio briefly reduces (or mutes) for a random length between min/max, at random gaps between min/max. Dip length can use <b>sec</b> or <b>ms</b>. <b>Invert</b> reverses it, so the dip volume is outside the window and full volume plays only inside the window. <b>Soft fade</b> makes the volume glide instead of jump.</div>
   </div>
 
 
@@ -685,10 +707,15 @@ var DIP_LEN_MAX_KEY = "YT60_DIP_LEN_MAX";
 var DIP_GAP_MIN_KEY = "YT60_DIP_GAP_MIN";
 var DIP_GAP_MAX_KEY = "YT60_DIP_GAP_MAX";
 var DIP_VOL_KEY = "YT60_DIP_VOL";
+var DIP_INVERT_KEY = "YT96_DIP_INVERT";
+var DIP_SOFT_KEY = "YT96_DIP_SOFT";
+var DIP_FADE_MS_KEY = "YT96_DIP_FADE_MS";
+var DIP_LEN_UNIT_KEY = "YT97_DIP_LEN_UNIT";
 
 var dipEnabled = (localStorage.getItem(DIP_TOGGLE_KEY)==="1");
 var dipTimerGap = null;
 var dipTimerLen = null;
+var dipFadeTimer = null;
 var dipping = false;
 var savedVolume = 100;
 
@@ -697,6 +724,11 @@ function readDipNumber(id, dflt){
   var v = parseInt(el ? el.value : dflt, 10);
   if(isNaN(v)) v = dflt;
   return v;
+}
+function readDipFlag(id, key){
+  var el = document.getElementById(id);
+  if(el) return !!el.checked;
+  return localStorage.getItem(key)==="1";
 }
 function rndInt(minVal, maxVal){
   minVal = Math.max(0, Math.floor(minVal));
@@ -709,6 +741,10 @@ function applyDipSettingsToInputs(){
   var g1 = get(DIP_GAP_MIN_KEY, 10), g2 = get(DIP_GAP_MAX_KEY, 50);
   var vp = get(DIP_VOL_KEY, 10);
   var tgl = (localStorage.getItem(DIP_TOGGLE_KEY)==="1");
+  var inv = (localStorage.getItem(DIP_INVERT_KEY)==="1");
+  var soft = (localStorage.getItem(DIP_SOFT_KEY)==="1");
+  var fadeMs = get(DIP_FADE_MS_KEY, 800);
+  var lenUnit = localStorage.getItem(DIP_LEN_UNIT_KEY) || "sec";
 
   var el;
   if(el=document.getElementById("dipLenMin")) el.value = v1;
@@ -717,6 +753,10 @@ function applyDipSettingsToInputs(){
   if(el=document.getElementById("dipGapMax")) el.value = g2;
   if(el=document.getElementById("dipVolumePct")) el.value = vp;
   if(el=document.getElementById("dipToggle")) el.checked = !!tgl;
+  if(el=document.getElementById("dipInvertToggle")) el.checked = !!inv;
+  if(el=document.getElementById("dipSoftToggle")) el.checked = !!soft;
+  if(el=document.getElementById("dipFadeMs")) el.value = fadeMs;
+  if(el=document.getElementById("dipLenUnit")) el.value = (lenUnit === "ms" ? "ms" : "sec");
 }
 function saveDipSettings(){
   var v1 = readDipNumber("dipLenMin",1);
@@ -724,6 +764,11 @@ function saveDipSettings(){
   var g1 = readDipNumber("dipGapMin",10);
   var g2 = readDipNumber("dipGapMax",50);
   var vp = readDipNumber("dipVolumePct",10);
+  var fadeMs = readDipNumber("dipFadeMs",800);
+  var inv = readDipFlag("dipInvertToggle", DIP_INVERT_KEY);
+  var soft = readDipFlag("dipSoftToggle", DIP_SOFT_KEY);
+  var lenUnitEl = document.getElementById("dipLenUnit");
+  var lenUnit = (lenUnitEl && lenUnitEl.value === "ms") ? "ms" : "sec";
   if(v2 < v1) v2 = v1;
   if(g2 < g1) g2 = g1;
   localStorage.setItem(DIP_LEN_MIN_KEY, String(v1));
@@ -731,7 +776,81 @@ function saveDipSettings(){
   localStorage.setItem(DIP_GAP_MIN_KEY, String(g1));
   localStorage.setItem(DIP_GAP_MAX_KEY, String(g2));
   localStorage.setItem(DIP_VOL_KEY, String(Math.max(0, Math.min(100, vp))));
+  localStorage.setItem(DIP_INVERT_KEY, inv ? "1" : "0");
+  localStorage.setItem(DIP_SOFT_KEY, soft ? "1" : "0");
+  localStorage.setItem(DIP_FADE_MS_KEY, String(Math.max(0, fadeMs)));
+  localStorage.setItem(DIP_LEN_UNIT_KEY, lenUnit);
 }
+function getDipTargetVolume(){
+  return Math.max(0, Math.min(100, readDipNumber("dipVolumePct",10)));
+}
+function clearDipFade(){
+  if(dipFadeTimer){ clearInterval(dipFadeTimer); dipFadeTimer = null; }
+}
+function getCurrentPlayerVolume(){
+  try{ if(player && typeof player.getVolume === "function") return Math.max(0, Math.min(100, player.getVolume())); }catch(e){}
+  return (typeof savedVolume === "number" ? savedVolume : 100);
+}
+function setPlayerVolumeSmooth(targetVol){
+  if(!player || typeof player.setVolume !== "function") return;
+  targetVol = Math.max(0, Math.min(100, Math.round(targetVol)));
+  var soft = readDipFlag("dipSoftToggle", DIP_SOFT_KEY);
+  var fadeMs = Math.max(0, readDipNumber("dipFadeMs",800));
+  clearDipFade();
+  try{ player.unMute && player.unMute(); }catch(e){}
+  if(!soft || fadeMs===0){
+    try{
+      player.setVolume(targetVol);
+      if(targetVol===0 && player.mute) player.mute();
+      else if(player.unMute) player.unMute();
+    }catch(e){}
+    return;
+  }
+  var startVol = getCurrentPlayerVolume();
+  var steps = Math.max(1, Math.round(fadeMs / 60));
+  var step = 0;
+  dipFadeTimer = setInterval(function(){
+    step++;
+    var v = Math.round(startVol + (targetVol - startVol) * (step/steps));
+    try{
+      player.unMute && player.unMute();
+      player.setVolume(v);
+      if(step >= steps){
+        clearDipFade();
+        if(targetVol===0 && player.mute) player.mute();
+        else if(player.unMute) player.unMute();
+      }
+    }catch(e){ clearDipFade(); }
+  }, Math.max(20, Math.floor(fadeMs / steps)));
+}
+function restoreNormalVolume(){
+  try{
+    var normalVol = Math.max(0, Math.min(100, (typeof savedVolume === "number" ? savedVolume : 100)));
+    setPlayerVolumeSmooth(normalVol);
+  }catch(e){}
+}
+function applyDipBaselineForPlay(){
+  if(!dipEnabled || !player) return;
+  try{
+    if(typeof player.getVolume === "function") savedVolume = Math.max(0, Math.min(100, player.getVolume()));
+  }catch(e){}
+  if(readDipFlag("dipInvertToggle", DIP_INVERT_KEY)){
+    setPlayerVolumeSmooth(getDipTargetVolume());
+  }else{
+    restoreNormalVolume();
+  }
+}
+
+function getDipLengthMs(){
+  var lenMin = readDipNumber("dipLenMin",1);
+  var lenMax = readDipNumber("dipLenMax",4);
+  var unitEl = document.getElementById("dipLenUnit");
+  var unit = (unitEl && unitEl.value === "ms") ? "ms" : (localStorage.getItem(DIP_LEN_UNIT_KEY) || "sec");
+  if(lenMax < lenMin) lenMax = lenMin;
+  var rawLen = rndInt(lenMin, lenMax);
+  return unit === "ms" ? rawLen : rawLen * 1000;
+}
+
 function scheduleNextDip(){
   clearDipTimers();
   if(!dipEnabled) return;
@@ -743,36 +862,42 @@ function scheduleNextDip(){
 function beginDip(){
   if(!dipEnabled) return;
   if(!player || typeof player.setVolume !== "function") { scheduleNextDip(); return; }
-  var lenMin = readDipNumber("dipLenMin",1);
-  var lenMax = readDipNumber("dipLenMax",4);
-  var len = rndInt(lenMin, lenMax) * 1000;
-  var pct = Math.max(0, Math.min(100, readDipNumber("dipVolumePct",10)));
+  var len = getDipLengthMs();
+  var invert = readDipFlag("dipInvertToggle", DIP_INVERT_KEY);
 
   try{
-    if(typeof player.getVolume === "function"){ savedVolume = player.getVolume(); } else { savedVolume = 100; }
-    if(pct === 0){ player.mute && player.mute(); }
-    else{ player.unMute && player.unMute(); player.setVolume(pct); }
+    if(typeof player.getVolume === "function") savedVolume = Math.max(0, Math.min(100, player.getVolume()));
   }catch(e){}
+
+  if(invert){
+    restoreNormalVolume();
+  }else{
+    setPlayerVolumeSmooth(getDipTargetVolume());
+  }
 
   dipping = true;
   dipTimerLen = setTimeout(endDip, len);
 }
 function endDip(){
-  try{
-    player.unMute && player.unMute();
-    if(typeof player.setVolume === "function"){ player.setVolume(savedVolume || 100); }
-  }catch(e){}
+  var invert = readDipFlag("dipInvertToggle", DIP_INVERT_KEY);
+  if(invert){
+    setPlayerVolumeSmooth(getDipTargetVolume());
+  }else{
+    restoreNormalVolume();
+  }
   dipping = false;
   scheduleNextDip();
 }
 function clearDipTimers(){
   if(dipTimerGap){ clearTimeout(dipTimerGap); dipTimerGap = null; }
   if(dipTimerLen){ clearTimeout(dipTimerLen); dipTimerLen = null; }
+  clearDipFade();
 }
 function setDipEnabled(flag){
   dipEnabled = !!flag;
   localStorage.setItem(DIP_TOGGLE_KEY, dipEnabled ? "1" : "0");
-  if(!dipEnabled){ clearDipTimers(); } else { scheduleNextDip(); }
+  if(!dipEnabled){ clearDipTimers(); restoreNormalVolume(); }
+  else { applyDipBaselineForPlay(); scheduleNextDip(); }
 }
 document.addEventListener("click", function(e){
   if(e.target && e.target.id === "dipSettingsBtn"){
@@ -788,12 +913,14 @@ function initDipUI(){
     dipToggleEl.checked = (localStorage.getItem(DIP_TOGGLE_KEY)==="1");
     dipToggleEl.onchange = function(){ setDipEnabled(dipToggleEl.checked); };
   }
-  ["dipLenMin","dipLenMax","dipGapMin","dipGapMax","dipVolumePct"].forEach(function(id){
+  ["dipLenMin","dipLenMax","dipLenUnit","dipGapMin","dipGapMax","dipVolumePct","dipFadeMs","dipInvertToggle","dipSoftToggle"].forEach(function(id){
     var el = document.getElementById(id);
-    if(el){ el.addEventListener("change", saveDipSettings); }
+    if(el){
+      var evt = (el.type === "checkbox") ? "change" : "change";
+      el.addEventListener(evt, function(){ saveDipSettings(); if(dipEnabled){ applyDipBaselineForPlay(); } });
+    }
   });
 }
-
 
 var PL_SHUFFLE_KEY="YT79_PL_SHUFFLE";
 var PL_LOOP_KEY="YT79_PL_LOOP";
@@ -1000,7 +1127,7 @@ function loadByIndex(idx, autoStart){
 function handleEnded(){ var ni=nextIndex(); if(ni<0) return; loadByIndex(ni, !bypassToggle.checked); }
 
 function startPlainPlay(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); stopBar(); if(!player) return; player.playVideo(); setPlayUI(true,false); }
-function pauseNow(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); stopBar(); if(player){ player.pauseVideo(); } if(dimToggle.checked) pauseOverlay.style.display="block"; setPlayUI(false,true); }
+function pauseNow(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); restoreNormalVolume(); stopBar(); if(player){ player.pauseVideo(); } if(dimToggle.checked) pauseOverlay.style.display="block"; setPlayUI(false,true); }
 
 function startPlayStepper(){
   if(!player){
@@ -1013,6 +1140,7 @@ function startPlayStepper(){
 
   function cyclePlay(){
     if(!stepRunning) return;
+    applyDipBaselineForPlay();
     scheduleNextDip();
     inPauseSegment = false;
     pauseOverlay.style.display="none"; setPlayUI(true,false);
@@ -1025,6 +1153,7 @@ function startPlayStepper(){
   function cyclePause(){
     if(!stepRunning) return;
     clearDipTimers();
+    restoreNormalVolume();
     inPauseSegment = true;
     if(muteToggle.checked && player){ try{ if(player.mute) player.mute(); if(player.playVideo) player.playVideo(); }catch(e){} if(dimToggle.checked) pauseOverlay.style.display="block"; }
     else{ if(player) player.pauseVideo(); if(dimToggle.checked) pauseOverlay.style.display="block"; }
@@ -1281,5 +1410,4 @@ document.addEventListener("keydown", function(e){
 </script>
 <script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();</script>
 </body>
-</html
-  try{ var bc=$("bigCountdown"); if(bc){ bc.textContent="00:00"; } }catch(e){}>
+</html>
