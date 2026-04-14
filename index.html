@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v100</title>
+<title>YT play/pause - v98</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
@@ -84,14 +84,13 @@
   .btn-main{min-width:90px;height:40px;}
   .btn-main.playing{background:var(--accent);}
   .btn-main.paused{background:#444b55;}
-  .playerWrap{position:relative;max-width:78%;margin:0 auto;}
+  .playerWrap{position:relative;}
   iframe{width:100%;aspect-ratio:16/9;border-radius:12px;border:0;background:#000;}
   .pauseOverlay{position:absolute;inset:0;border-radius:12px;background:rgba(0,0,0,0.75);pointer-events:none;display:none;}
   .wm{position:absolute;left:50%;transform:translateX(-50%);top:20%;background:rgba(0,0,0,0.45);color:#e5e7eb;font-size:12px;padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);pointer-events:none;opacity:0;transition:opacity .25s ease;}
   label{font-size:12px;color:var(--muted);display:block;margin-bottom:2px;}
   input[type="number"],input[type="text"]{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #2a2d33;background:#0f1115;color:var(--fg);outline:none;font-size:14px;}
-  input[type="number"]{max-width:90px;}
-  input.timeField{max-width:170px;}
+  input[type="number"]{max-width:70px;}
   .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:999px;background:#20242c;border:1px solid #2b313b;font-size:12px;color:#e5e7eb;}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
   .chip{padding:4px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--chip-border);font-size:12px;cursor:pointer;white-space:nowrap;}
@@ -137,9 +136,10 @@
 </style>
 </head>
 <body>
+<div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><h1>YT play/pause - v100</h1></div>
+    <div class="titleRow"><h1>YT play/pause - v98</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div class="playerWrap">
       <div id="player"></div>
@@ -164,22 +164,64 @@
       </div>
       <div class="switchWrap" style="margin-left:8px;">
         <span>Random dips</span>
-<div class="row" style="margin-top:6px;align-items:flex-end;">
+      <div class="switchWrap" style="margin-left:8px;">
+        <span>Improv names</span>
+        <label class="switch">
+          <input id="famousToggle" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+    
+        <label class="switch">
+          <input id="dipToggle" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <button id="dipSettingsBtn" class="btn-icon" title="Adjust dip settings">Dip settings</button>
+      <span id="bigCountdown" class="bigCounter mode-play">00:00</span>
+      <button id="playerSizeBtn" class="btn-toggle" title="Toggle half-height player">Player size</button>
+    </div>
+
+    <!-- Row 2: transport -->
+    <div class="row" style="margin-top:6px;">
+      <button id="prevBtn" class="btn-icon" title="Previous">&#9664;</button>
+      <button id="playBtn" class="btn-main" title="Play">Play</button>
+      <button id="pauseBtn" class="btn-main" title="Pause">Pause</button>
+      <button id="nextBtn" class="btn-icon" title="Next">&#9654;</button>
+    </div>
+
+    <!-- Row 3: big Reset + Next (segment) -->
+    <div class="row" style="margin-top:6px;">
+      <button id="resetLengthsBtn" class="btn-main" title="Reset play &amp; pause to 0:00">Reset</button>
+      <button id="nextSegmentBtn" class="btn-main" title="Jump to next segment">Next segment</button>
+    
+      
+      <button id="plPrevMainBtn" class="btn-main" style="min-width:180px" title="Play previous track in current playlist">Prev in playlist</button>
+<button id="plNextMainBtn" class="btn-main" style="min-width:200px" title="Play next track in current playlist">Next in playlist</button>
+</div>
+
+    <div class="row">
+      <span id="playCountdown" class="badge" style="display:none;">Play: 0:00</span>
+      <span id="pauseCountdown" class="badge" style="display:none;">Pause: 0:00</span>
+    </div>
+</div>
+
+    <div class="row" style="margin-top:6px;align-items:flex-end;">
       <div class="row nowrap">
         <div>
-          <label>Play (minutes + seconds)</label>
+          <label>Play (mm:ss)</label>
           <div class="row">
-            <input id="playMin" class="timeField" type="text" value="0" placeholder="0 or 1.5 minute">
+            <input id="playMin" type="number" min="0" value="0">
             <span>:</span>
-            <input id="playSec" class="timeField" type="text" value="40" placeholder="40 or 0.5 second">
+            <input id="playSec" type="number" min="0" value="40">
           </div>
         </div>
         <div>
-          <label>Pause (minutes + seconds)</label>
+          <label>Pause (mm:ss)</label>
           <div class="row">
-            <input id="pauseMin" class="timeField" type="text" value="0" placeholder="0 or 1.5 minute">
+            <input id="pauseMin" type="number" min="0" value="0">
             <span>:</span>
-            <input id="pauseSec" class="timeField" type="text" value="40" placeholder="40 or 0.5 second">
+            <input id="pauseSec" type="number" min="0" value="40">
           </div>
         
         
@@ -201,8 +243,8 @@
     </div>
 
     <div class="timerRow">
-      <span class="tiny">Session timer (minutes):</span>
-      <input id="timerMin" class="timeField" type="text" value="30" placeholder="30 or 1.5 minute">
+      <span class="tiny">Session timer (min):</span>
+      <input id="timerMin" type="number" min="1" value="30">
       <label class="switch">
         <input id="timerToggle" type="checkbox">
         <span class="slider"></span>
@@ -214,7 +256,6 @@
     <div class="banner tiny">
       Space = Play, P = Pause, &larr;/&rarr; = Prev/Next.
       <br>When session timer reaches 0, playback stops and will not continue.
-      <br>You can type <b>0.5</b>, <b>1.5 second</b>, <b>1.5 minute</b>, or <b>1:30</b> in time fields.
     </div>
   </div>
 
@@ -302,19 +343,19 @@
     <h2>Audio dip settings</h2>
     <div class="row">
       <div>
-        <label>Dip length (seconds, decimals ok): min</label>
+        <label>Dip length (seconds): min</label>
         <div class="row">
-          <input id="dipLenMin" class="timeField" type="text" value="1.0" placeholder="0.1 or 1.5 second">
+          <input id="dipLenMin" type="number" min="0" step="0.1" value="1.0">
           <span>to</span>
-          <input id="dipLenMax" class="timeField" type="text" value="4.0" placeholder="4.0 or 1.5 second">
+          <input id="dipLenMax" type="number" min="0" step="0.1" value="4.0">
         </div>
       </div>
       <div>
-        <label>Dip gap (seconds between dips, decimals ok): min</label>
+        <label>Dip gap (seconds between dips): min</label>
         <div class="row">
-          <input id="dipGapMin" class="timeField" type="text" value="10" placeholder="10 or 0.5 second">
+          <input id="dipGapMin" type="number" min="1" value="10">
           <span>to</span>
-          <input id="dipGapMax" class="timeField" type="text" value="50" placeholder="50 or 1.5 second">
+          <input id="dipGapMax" type="number" min="1" value="50">
         </div>
       </div>
       <div>
@@ -344,19 +385,12 @@
       </div>
       <div>
         <label>Fade ms</label>
-        <input id="dipFadeMs" class="timeField" type="text" value="800" placeholder="800 or 0.8 second">
+        <input id="dipFadeMs" type="number" min="0" max="10000" value="800">
       </div>
     </div>
-    <div class="banner tiny">During <b>Play</b> segments, the audio briefly reduces (or mutes) for a random length between min/max, at random gaps between min/max. You can type values like <b>0.2</b>, <b>1.5 second</b>, or <b>1.5 minute</b>. <b>Invert</b> reverses it, so the dip volume is outside the window and full volume plays only inside the window. <b>Soft fade</b> smooths dip changes. <b>Soft intro</b> smooths play/pause changes.</div>
+    <div class="banner tiny">During <b>Play</b> segments, the audio briefly reduces (or mutes) for a random length between min/max, at random gaps between min/max. Dip length accepts decimals like <b>0.2</b> or <b>1.2</b> seconds. <b>Invert</b> reverses it, so the dip volume is outside the window and full volume plays only inside the window. <b>Soft fade</b> smooths dip changes. <b>Soft intro</b> smooths play/pause changes.</div>
   </div>
 
-
-
-  <div id="recentSessionsCard" class="card" style="margin-top:8px;">
-    <h2>Recent sessions (last 10)</h2>
-    <div class="banner tiny">Autosaves while you use the app. Each item stores time/date, timings, current list, selected track, and playlist settings. Click Load to recreate it.</div>
-    <div id="recentSessionsList" class="list" style="max-height:260px;"></div>
-  </div>
 
 <script>
 // ----- small utils -----
@@ -419,205 +453,6 @@ function clampInt(v, minVal){ var n = parseInt(v,10); if(isNaN(n)) n = 0; if(typ
 function clampFloat(v, minVal){ var n = parseFloat(v); if(isNaN(n)) n = 0; if(typeof minVal === "number" && n < minVal) n = minVal; return n; }
 function fmtSec(t){ t = Math.max(0, Math.floor(t||0)); var m = Math.floor(t/60); var s = t % 60; return m + ":" + (s<10?"0":"") + s; }
 
-var ARCHETYPES = ["Seeker","Caregiver","Warrior","Magician","Creator","Sage","Jester","Ruler","Rebel","Lover","Explorer","Mentor","Visionary","Companion","Servant","Performer"];
-var CURRENT_SESSION_KEY="YT100_CURRENT_SESSION";
-var SESSION_HISTORY_KEY="YT100_SESSION_HISTORY";
-var SESSION_SAVE_TIMER=null;
-var NEW_SONG_AFTER_PAUSE_KEY = "YT82_NEW_SONG_AFTER_PAUSE";
-var newSongAfterPauseEnabled = (localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)===null) ? true : localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)==="1";
-
-function parseFlexibleDuration(v, defaultUnit){
-  var s = String(v==null ? "" : v).trim().toLowerCase();
-  if(!s) return 0;
-  s = s.replace(',', '.').replace(/\s+/g, ' ');
-  if(/^\d+(?:\.\d+)?\s*:\s*\d+(?:\.\d+)?$/.test(s)){
-    var parts = s.split(':');
-    return (parseFloat(parts[0])||0)*60 + (parseFloat(parts[1])||0);
-  }
-  var m = s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/);
-  if(!m){
-    var raw = parseFloat(s);
-    return isNaN(raw) ? 0 : (defaultUnit==="minute" ? raw*60 : raw);
-  }
-  var num = parseFloat(m[1]); var unit = m[2] || "";
-  if(isNaN(num)) return 0;
-  if(unit==="ms" || unit==="msec" || unit==="millisecond" || unit==="milliseconds") return num/1000;
-  if(unit==="s" || unit==="sec" || unit==="secs" || unit==="second" || unit==="seconds") return num;
-  if(unit==="m" || unit==="min" || unit==="mins" || unit==="minute" || unit==="minutes") return num*60;
-  return defaultUnit==="minute" ? num*60 : num;
-}
-function parseFlexibleMs(v, fallback){
-  var s = String(v==null ? "" : v).trim().toLowerCase();
-  if(!s) return fallback || 0;
-  s = s.replace(',', '.').replace(/\s+/g, ' ');
-  var m = s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/);
-  if(!m){
-    var raw = parseFloat(s);
-    return isNaN(raw) ? (fallback||0) : raw;
-  }
-  var num = parseFloat(m[1]); var unit = m[2] || "";
-  if(isNaN(num)) return fallback || 0;
-  if(unit==="s" || unit==="sec" || unit==="secs" || unit==="second" || unit==="seconds") return num*1000;
-  if(unit==="m" || unit==="min" || unit==="mins" || unit==="minute" || unit==="minutes") return num*60000;
-  return num;
-}
-function formatStamp(ts){ try{ return new Date(ts).toLocaleString(); }catch(e){ return ""; } }
-function escapeHtml(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-function pickArchetype(seed){
-  var s = String(seed||"");
-  var sum = 0;
-  for(var i=0;i<s.length;i++) sum = (sum + s.charCodeAt(i)*(i+1)) % 2147483647;
-  return ARCHETYPES[sum % ARCHETYPES.length];
-}
-function updateTrackMeta(){
-  var title = "";
-  try{
-    if(player && typeof player.getVideoData==="function"){
-      var d = player.getVideoData();
-      if(d && d.title) title = d.title;
-    }
-  }catch(e){}
-  if(!title && items && currentIndex>=0 && items[currentIndex]) title = items[currentIndex].title || "";
-  var t = $("currentTrackTitle"); if(t) t.textContent = title || "â€”";
-  var a = $("archetypeText"); if(a) a.textContent = pickArchetype(title || ((items && items[currentIndex] && items[currentIndex].id) || "Seeker"));
-}
-function getSessionState(){
-  return {
-    savedAt: Date.now(),
-    currentKind: currentKind || "music",
-    currentIndex: typeof currentIndex==="number" ? currentIndex : -1,
-    playMin: $("playMin") ? $("playMin").value : "0",
-    playSec: $("playSec") ? $("playSec").value : "40",
-    pauseMin: $("pauseMin") ? $("pauseMin").value : "0",
-    pauseSec: $("pauseSec") ? $("pauseSec").value : "40",
-    timerMin: $("timerMin") ? $("timerMin").value : "30",
-    pauseFirst: $("pauseFirstToggle") ? !!$("pauseFirstToggle").checked : false,
-    dimToggle: $("dimToggle") ? !!$("dimToggle").checked : false,
-    randomToggle: $("randomToggle") ? !!$("randomToggle").checked : false,
-    bypassToggle: $("bypassToggle") ? !!$("bypassToggle").checked : false,
-    muteToggle: $("muteToggle") ? !!$("muteToggle").checked : false,
-    dipToggle: $("dipToggle") ? !!$("dipToggle").checked : false,
-    dipLenMin: $("dipLenMin") ? $("dipLenMin").value : "1.0",
-    dipLenMax: $("dipLenMax") ? $("dipLenMax").value : "4.0",
-    dipGapMin: $("dipGapMin") ? $("dipGapMin").value : "10",
-    dipGapMax: $("dipGapMax") ? $("dipGapMax").value : "50",
-    dipVolumePct: $("dipVolumePct") ? $("dipVolumePct").value : "10",
-    dipInvertToggle: $("dipInvertToggle") ? !!$("dipInvertToggle").checked : false,
-    dipSoftToggle: $("dipSoftToggle") ? !!$("dipSoftToggle").checked : false,
-    softIntroToggle: $("softIntroToggle") ? !!$("softIntroToggle").checked : false,
-    dipFadeMs: $("dipFadeMs") ? $("dipFadeMs").value : "800",
-    plShuffle: $("plShuffleToggle") ? !!$("plShuffleToggle").checked : false,
-    plLoop: $("plLoopToggle") ? !!$("plLoopToggle").checked : false,
-    plNewSong: $("plNewSongToggle") ? !!$("plNewSongToggle").checked : newSongAfterPauseEnabled,
-    title: $("currentTrackTitle") ? $("currentTrackTitle").textContent : ""
-  };
-}
-function saveCurrentSession(pushHistory){
-  try{
-    var state = getSessionState();
-    localStorage.setItem(CURRENT_SESSION_KEY, JSON.stringify(state));
-    if(pushHistory !== false){
-      var arr = [];
-      try{ arr = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || "[]") || []; }catch(e){ arr=[]; }
-      arr.unshift(state);
-      arr = arr.slice(0,10);
-      localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(arr));
-    }
-    renderRecentSessions();
-  }catch(e){}
-}
-function saveCurrentSessionSoon(pushHistory){
-  if(SESSION_SAVE_TIMER) clearTimeout(SESSION_SAVE_TIMER);
-  SESSION_SAVE_TIMER = setTimeout(function(){ saveCurrentSession(pushHistory); }, 250);
-}
-function applySessionState(state){
-  if(!state) return;
-  try{
-    if($("playMin") && state.playMin!=null) $("playMin").value = state.playMin;
-    if($("playSec") && state.playSec!=null) $("playSec").value = state.playSec;
-    if($("pauseMin") && state.pauseMin!=null) $("pauseMin").value = state.pauseMin;
-    if($("pauseSec") && state.pauseSec!=null) $("pauseSec").value = state.pauseSec;
-    if($("timerMin") && state.timerMin!=null) $("timerMin").value = state.timerMin;
-    if($("pauseFirstToggle")) $("pauseFirstToggle").checked = !!state.pauseFirst;
-    if($("dimToggle")) $("dimToggle").checked = !!state.dimToggle;
-    if($("randomToggle")) $("randomToggle").checked = !!state.randomToggle;
-    if($("bypassToggle")) $("bypassToggle").checked = !!state.bypassToggle;
-    if($("muteToggle")) $("muteToggle").checked = !!state.muteToggle;
-    if($("dipToggle")) $("dipToggle").checked = !!state.dipToggle;
-    if($("dipLenMin") && state.dipLenMin!=null) $("dipLenMin").value = state.dipLenMin;
-    if($("dipLenMax") && state.dipLenMax!=null) $("dipLenMax").value = state.dipLenMax;
-    if($("dipGapMin") && state.dipGapMin!=null) $("dipGapMin").value = state.dipGapMin;
-    if($("dipGapMax") && state.dipGapMax!=null) $("dipGapMax").value = state.dipGapMax;
-    if($("dipVolumePct") && state.dipVolumePct!=null) $("dipVolumePct").value = state.dipVolumePct;
-    if($("dipInvertToggle")) $("dipInvertToggle").checked = !!state.dipInvertToggle;
-    if($("dipSoftToggle")) $("dipSoftToggle").checked = !!state.dipSoftToggle;
-    if($("softIntroToggle")) $("softIntroToggle").checked = !!state.softIntroToggle;
-    if($("dipFadeMs") && state.dipFadeMs!=null) $("dipFadeMs").value = state.dipFadeMs;
-    if($("plShuffleToggle")) $("plShuffleToggle").checked = !!state.plShuffle;
-    if($("plLoopToggle")) $("plLoopToggle").checked = !!state.plLoop;
-    if($("plNewSongToggle")) $("plNewSongToggle").checked = !!state.plNewSong;
-    newSongAfterPauseEnabled = !!state.plNewSong;
-    localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1":"0");
-    setPauseFirst(!!state.pauseFirst);
-    saveDipSettings();
-    setDipEnabled(!!state.dipToggle);
-    setPlShuffle(!!state.plShuffle);
-    setPlLoop(!!state.plLoop);
-    if(state.currentKind){
-      currentKind = state.currentKind;
-      loadList(currentKind);
-      renderList();
-      Array.prototype.forEach.call(document.querySelectorAll("#pageUrls .btn-tab[data-kind]"), function(btn){
-        btn.classList.toggle("active", btn.getAttribute("data-kind")===currentKind);
-      });
-    }
-    if(typeof state.currentIndex==="number" && state.currentIndex>=0 && items[state.currentIndex]){
-      currentIndex = state.currentIndex;
-      ensurePlayer(items[currentIndex].id, items[currentIndex].start || 0);
-      renderList();
-    }
-    updateTrackMeta();
-  }catch(e){}
-}
-function restoreLastSession(){
-  try{
-    var raw = localStorage.getItem(CURRENT_SESSION_KEY);
-    if(raw) applySessionState(JSON.parse(raw));
-  }catch(e){}
-}
-function renderRecentSessions(){
-  var root = $("recentSessionsList");
-  if(!root) return;
-  root.innerHTML = "";
-  var arr = [];
-  try{ arr = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || "[]") || []; }catch(e){ arr=[]; }
-  if(!arr.length){
-    var empty = document.createElement("div");
-    empty.className = "banner tiny";
-    empty.textContent = "No saved sessions yet.";
-    root.appendChild(empty);
-    return;
-  }
-  arr.slice(0,10).forEach(function(s, idx){
-    var row = document.createElement("div");
-    row.className = "item";
-    row.style.gridTemplateColumns = "auto 1fr auto";
-    var n = document.createElement("div");
-    n.className = "idx";
-    n.textContent = String(idx+1);
-    var mid = document.createElement("div");
-    mid.innerHTML = "<div style='font-size:13px;font-weight:600;'>" + escapeHtml(s.title || s.currentKind || "Session") + "</div><div class='tiny'>" +
-      escapeHtml(formatStamp(s.savedAt) + " Â· Play " + (s.playMin||0) + " + " + (s.playSec||0) + " Â· Pause " + (s.pauseMin||0) + " + " + (s.pauseSec||0) + " Â· " + (s.currentKind||"music")) +
-      "</div>";
-    var btn = document.createElement("button");
-    btn.textContent = "Load";
-    btn.onclick = function(){ applySessionState(s); saveCurrentSessionSoon(false); };
-    row.appendChild(n); row.appendChild(mid); row.appendChild(btn);
-    root.appendChild(row);
-  });
-}
-
-
 // ----- tabs (URL lists always visible) -----
 var tabPlayer=$("tabPlayer"), tabUrls=$("tabUrls"), tabPlaylist=$("tabPlaylist");
 var pagePlayer=$("pagePlayer"), pageUrls=$("pageUrls"), pagePlaylist=$("pagePlaylist");
@@ -643,7 +478,7 @@ tabPlayer.onclick=function(){ currentKind="playlists"; loadList(currentKind); re
     if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); }
   }catch(e){}
 })();
- initPlaylistUI(); };
+ initFamousUI(); initPlaylistUI(); };
 tabUrls.onclick=function(){ setTab("urls"); };
 tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); initFamousUI(); };
 
@@ -740,7 +575,7 @@ function renderList(){
     topBtn.onclick=function(){ moveToTop(idx); };
     var idxBox=document.createElement("div"); idxBox.className="idx"; idxBox.textContent=""+(idx+1);
     var titleInput=document.createElement("input"); titleInput.className="titleInput"; titleInput.value=it.title||"(untitled)";
-    titleInput.onchange=function(){ items[idx].title = titleInput.value.trim() || items[idx].title; saveList(); updateTrackMeta(); saveCurrentSessionSoon(false); };
+    titleInput.onchange=function(){ items[idx].title = titleInput.value.trim() || items[idx].title; saveList(); };
     var trashBtn=document.createElement("button"); trashBtn.className="btn-icon"; trashBtn.textContent="Trash"; trashBtn.onclick=function(){ deleteItem(idx); };
     var copyBtn=document.createElement("button"); copyBtn.className="btn-icon"; copyBtn.textContent="Copy"; copyBtn.onclick=function(){
       var url=idToUrl(it.id); if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).catch(function(){ alert("URL: "+url); }); } else { alert("URL: "+url); }
@@ -758,16 +593,16 @@ async function addUrl(raw){
   if(!id && currentKind==="playlists"){ var pid=parsePlaylistId(raw); if(pid){ id=pid; isPlaylist=true; } }
   if(!id) return;
   var title=id; try{ title = await fetchTitleForId(id,isPlaylist); }catch(e){}
-  items.unshift({id:id,title:title||id,start:parseStartSeconds(raw)}); saveList(); renderList(); saveCurrentSessionSoon(false);
+  items.unshift({id:id,title:title||id,start:parseStartSeconds(raw)}); saveList(); renderList();
 }
-function moveToTop(idx){ if(idx<=0||idx>=items.length) return; var x=items.splice(idx,1)[0]; items.unshift(x); currentIndex=0; saveList(); renderList(); saveCurrentSessionSoon(false); }
-function moveItem(idx,dir){ var ni=idx+dir; if(ni<0||ni>=items.length) return; var t=items[idx]; items[idx]=items[ni]; items[ni]=t; if(currentIndex===idx) currentIndex=ni; else if(currentIndex===ni) currentIndex=idx; saveList(); renderList(); saveCurrentSessionSoon(false); }
-function deleteItem(idx){ if(idx<0||idx>=items.length) return; items.splice(idx,1); if(currentIndex>=items.length) currentIndex=items.length-1; saveList(); renderList(); saveCurrentSessionSoon(false); }
+function moveToTop(idx){ if(idx<=0||idx>=items.length) return; var x=items.splice(idx,1)[0]; items.unshift(x); currentIndex=0; saveList(); renderList(); }
+function moveItem(idx,dir){ var ni=idx+dir; if(ni<0||ni>=items.length) return; var t=items[idx]; items[idx]=items[ni]; items[ni]=t; if(currentIndex===idx) currentIndex=ni; else if(currentIndex===ni) currentIndex=idx; saveList(); renderList(); }
+function deleteItem(idx){ if(idx<0||idx>=items.length) return; items.splice(idx,1); if(currentIndex>=items.length) currentIndex=items.length-1; saveList(); renderList(); }
 var urlKindButtons=[]; Array.prototype.forEach.call(document.querySelectorAll("#pageUrls .btn-tab[data-kind]"), function(btn){
   urlKindButtons.push(btn);
   btn.onclick=function(){ var k=btn.getAttribute("data-kind"); if(LIST_KINDS.indexOf(k)===-1) k="speech";
     saveList(); loadList(k); currentKind=k; currentIndex=-1;
-    urlKindButtons.forEach(function(b){ b.classList.toggle("active", b===btn); }); renderList(); saveCurrentSessionSoon(false);
+    urlKindButtons.forEach(function(b){ b.classList.toggle("active", b===btn); }); renderList();
   };
 });
 $("addUrlBtn").onclick=async function(){ var raw=$("urlInput").value.trim(); if(!raw) return; await addUrl(raw); $("urlInput").value=""; if(currentIndex===-1 && items.length>0) currentIndex=0; };
@@ -785,7 +620,7 @@ $("importFile").onchange=function(e){ var f=e.target.files && e.target.files[0];
       if(typeof entry==="string"){ src=entry; } else if(entry&&typeof entry==="object"){ src=entry.url||entry.href||entry.id||""; title=entry.title||""; start=entry.start||0; }
       var id=parseVideoId(String(src||"").trim()); if(id) next.push({id:id,title:title||id,start:start});
     });
-    if(next.length){ items=next; saveList(); renderList(); refreshTitlesForList(); saveCurrentSessionSoon(false); }
+    if(next.length){ items=next; saveList(); renderList(); refreshTitlesForList(); }
   }catch(e){} }; reader.readAsText(f); this.value="";
 };
 function refreshTitlesForList(){ items.forEach(function(it){ if(!it||!it.id) return; var need=!it.title||it.title===it.id||it.title==="(untitled)";
@@ -794,9 +629,9 @@ function refreshTitlesForList(){ items.forEach(function(it){ if(!it||!it.id) ret
 }); }
 
 // ----- timer + presets -----
-function getPlaySec(){ return Math.max(0, parseFlexibleDuration($("playMin").value, "minute") + parseFlexibleDuration($("playSec").value, "second")); }
-function getPauseSec(){ return Math.max(0, parseFlexibleDuration($("pauseMin").value, "minute") + parseFlexibleDuration($("pauseSec").value, "second")); }
-function setFromSeconds(minEl,secEl,total){ total=Math.max(0,+total||0); var m=Math.floor(total/60), s=Math.round((total%60)*10)/10; minEl.value=String(m); secEl.value=String(s); }
+function getPlaySec(){ var m=clampInt($("playMin").value,0), s=clampInt($("playSec").value,0); if(s>=60){ m+=Math.floor(s/60); s=s%60; } $("playMin").value=m; $("playSec").value=s; return m*60+s; }
+function getPauseSec(){ var m=clampInt($("pauseMin").value,0), s=clampInt($("pauseSec").value,0); if(s>=60){ m+=Math.floor(s/60); s=s%60; } $("pauseMin").value=m; $("pauseSec").value=s; return m*60+s; }
+function setFromSeconds(minEl,secEl,total){ total=Math.max(0,Math.floor(total||0)); var m=Math.floor(total/60), s=total%60; minEl.value=m; secEl.value=s; }
 var PRESETS_KEY="YT52_PRESETS";
 function loadPresets(){ try{ var raw=localStorage.getItem(PRESETS_KEY); return raw ? (JSON.parse(raw)||[]) : []; }catch(e){ return []; } }
 function savePresets(arr){ try{ localStorage.setItem(PRESETS_KEY, JSON.stringify(arr)); }catch(e){} }
@@ -812,7 +647,7 @@ function renderPresets(activePlay,activePause){
     root.appendChild(chip);
   });
 }
-["playMin","playSec","pauseMin","pauseSec","timerMin","dipLenMin","dipLenMax","dipGapMin","dipGapMax","dipVolumePct","dipFadeMs"].forEach(function(id){ var el=$(id); if(!el) return; ["focus","click"].forEach(function(evt){ el.addEventListener(evt, function(){ try{el.select();}catch(e){} }); }); ["input","change"].forEach(function(evt){ el.addEventListener(evt, function(){ saveCurrentSessionSoon(false); }); }); });
+["playMin","playSec","pauseMin","pauseSec","timerMin","dipLenMin","dipLenMax","dipGapMin","dipGapMax","dipVolumePct","dipFadeMs"].forEach(function(id){ var el=$(id); if(!el) return; ["focus","click"].forEach(function(evt){ el.addEventListener(evt, function(){ try{el.select();}catch(e){} }); }); });
 
 // session timer
 var timerEnabled=false, timerDeadline=0, timerIv=null;
@@ -820,13 +655,13 @@ function updateTimerBadge(){ var badge=$("timerLeft"); if(!timerEnabled){ badge.
   badge.style.display="inline-flex"; badge.textContent="Left: "+fmtSec(Math.floor(ms/1000));
 }
 function stopTimer(){ timerEnabled=false; if(timerIv){ clearInterval(timerIv); timerIv=null; } $("timerToggle").checked=false; updateTimerBadge(); }
-function startTimer(){ var mins=Math.max(0.1, parseFlexibleDuration($("timerMin").value, "minute")/60); $("timerMin").value=String(Math.round(mins*10)/10); timerEnabled=true; timerDeadline=Date.now()+mins*60*1000;
+function startTimer(){ var mins=clampInt($("timerMin").value,1); $("timerMin").value=mins; timerEnabled=true; timerDeadline=Date.now()+mins*60*1000;
   if(timerIv) clearInterval(timerIv); timerIv=setInterval(function(){ var ms=timerDeadline - Date.now();
     if(ms<=0){ clearInterval(timerIv); timerIv=null; timerEnabled=false; updateTimerBadge(); pauseNow(); return; } updateTimerBadge();
   }, 500); updateTimerBadge();
 }
-$("timerToggle").onchange=function(){ if(this.checked) startTimer(); else stopTimer(); saveCurrentSessionSoon(false); };
-$("timerResetBtn").onclick=function(){ if(timerEnabled) startTimer(); else updateTimerBadge(); saveCurrentSessionSoon(false); };
+$("timerToggle").onchange=function(){ if(this.checked) startTimer(); else stopTimer(); };
+$("timerResetBtn").onclick=function(){ if(timerEnabled) startTimer(); else updateTimerBadge(); };
 
 // ----- Bargraph logic (play=green, pause=red) -----
 var barEl = $("bargraphFill");
@@ -891,9 +726,9 @@ var introFadeTimer = null;
 
 function readDipNumber(id, dflt){
   var el = document.getElementById(id);
-  var raw = el ? el.value : dflt;
-  if(id==="dipFadeMs") return parseFlexibleMs(raw, dflt);
-  return parseFlexibleDuration(raw, "second");
+  var v = parseFloat(el ? el.value : dflt);
+  if(isNaN(v)) v = dflt;
+  return v;
 }
 function readDipFlag(id, key){
   var el = document.getElementById(id);
@@ -905,24 +740,20 @@ function rndInt(minVal, maxVal){
   maxVal = Math.max(minVal, Math.floor(maxVal));
   return Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
 }
-function rndFloat(minVal, maxVal){
-  minVal = Math.max(0, +minVal || 0);
-  maxVal = Math.max(minVal, +maxVal || minVal);
-  return minVal + Math.random() * (maxVal - minVal);
-}
 function applyDipSettingsToInputs(){
-  function get(k, d){ var v = localStorage.getItem(k); return v===null ? d : v; }
-  var v1 = get(DIP_LEN_MIN_KEY, "1.0"), v2 = get(DIP_LEN_MAX_KEY, "4.0");
-  var g1 = get(DIP_GAP_MIN_KEY, "10"), g2 = get(DIP_GAP_MAX_KEY, "50");
-  var vp = get(DIP_VOL_KEY, "10");
+  function get(k, d){ var v = localStorage.getItem(k); return v===null? d : parseInt(v,10); }
+  var v1 = get(DIP_LEN_MIN_KEY, 1), v2 = get(DIP_LEN_MAX_KEY, 4);
+  var g1 = get(DIP_GAP_MIN_KEY, 10), g2 = get(DIP_GAP_MAX_KEY, 50);
+  var vp = get(DIP_VOL_KEY, 10);
   var tgl = (localStorage.getItem(DIP_TOGGLE_KEY)==="1");
   var inv = (localStorage.getItem(DIP_INVERT_KEY)==="1");
   var soft = (localStorage.getItem(DIP_SOFT_KEY)==="1");
   var softIntro = (localStorage.getItem(SOFT_INTRO_KEY)==="1");
-  var fadeMs = get(DIP_FADE_MS_KEY, "800");
+  var fadeMs = get(DIP_FADE_MS_KEY, 800);
+
   var el;
-  if(el=document.getElementById("dipLenMin")) el.value = v1;
-  if(el=document.getElementById("dipLenMax")) el.value = v2;
+  if(el=document.getElementById("dipLenMin")) el.value = Number(v1).toFixed(1);
+  if(el=document.getElementById("dipLenMax")) el.value = Number(v2).toFixed(1);
   if(el=document.getElementById("dipGapMin")) el.value = g1;
   if(el=document.getElementById("dipGapMax")) el.value = g2;
   if(el=document.getElementById("dipVolumePct")) el.value = vp;
@@ -933,30 +764,26 @@ function applyDipSettingsToInputs(){
   if(el=document.getElementById("dipFadeMs")) el.value = fadeMs;
 }
 function saveDipSettings(){
-  var v1 = $("dipLenMin") ? $("dipLenMin").value : "1.0";
-  var v2 = $("dipLenMax") ? $("dipLenMax").value : "4.0";
-  var g1 = $("dipGapMin") ? $("dipGapMin").value : "10";
-  var g2 = $("dipGapMax") ? $("dipGapMax").value : "50";
+  var v1 = readDipNumber("dipLenMin",1);
+  var v2 = readDipNumber("dipLenMax",4);
+  var g1 = readDipNumber("dipGapMin",10);
+  var g2 = readDipNumber("dipGapMax",50);
   var vp = readDipNumber("dipVolumePct",10);
   var fadeMs = readDipNumber("dipFadeMs",800);
   var inv = readDipFlag("dipInvertToggle", DIP_INVERT_KEY);
   var soft = readDipFlag("dipSoftToggle", DIP_SOFT_KEY);
   var softIntro = readDipFlag("softIntroToggle", SOFT_INTRO_KEY);
-  var v1n = parseFlexibleDuration(v1, "second");
-  var v2n = parseFlexibleDuration(v2, "second");
-  var g1n = parseFlexibleDuration(g1, "second");
-  var g2n = parseFlexibleDuration(g2, "second");
-  if(v2n < v1n){ v2n = v1n; if($("dipLenMax")) $("dipLenMax").value = String(v2n); }
-  if(g2n < g1n){ g2n = g1n; if($("dipGapMax")) $("dipGapMax").value = String(g2n); }
-  localStorage.setItem(DIP_LEN_MIN_KEY, $("dipLenMin") ? $("dipLenMin").value : String(v1n));
-  localStorage.setItem(DIP_LEN_MAX_KEY, $("dipLenMax") ? $("dipLenMax").value : String(v2n));
-  localStorage.setItem(DIP_GAP_MIN_KEY, $("dipGapMin") ? $("dipGapMin").value : String(g1n));
-  localStorage.setItem(DIP_GAP_MAX_KEY, $("dipGapMax") ? $("dipGapMax").value : String(g2n));
+  if(v2 < v1) v2 = v1;
+  if(g2 < g1) g2 = g1;
+  localStorage.setItem(DIP_LEN_MIN_KEY, String(v1));
+  localStorage.setItem(DIP_LEN_MAX_KEY, String(v2));
+  localStorage.setItem(DIP_GAP_MIN_KEY, String(g1));
+  localStorage.setItem(DIP_GAP_MAX_KEY, String(g2));
   localStorage.setItem(DIP_VOL_KEY, String(Math.max(0, Math.min(100, vp))));
   localStorage.setItem(DIP_INVERT_KEY, inv ? "1" : "0");
   localStorage.setItem(DIP_SOFT_KEY, soft ? "1" : "0");
   localStorage.setItem(SOFT_INTRO_KEY, softIntro ? "1" : "0");
-  localStorage.setItem(DIP_FADE_MS_KEY, $("dipFadeMs") ? $("dipFadeMs").value : String(Math.max(0, fadeMs)));
+  localStorage.setItem(DIP_FADE_MS_KEY, String(Math.max(0, fadeMs)));
 }
 function getDipTargetVolume(){
   return Math.max(0, Math.min(100, readDipNumber("dipVolumePct",10)));
@@ -1036,7 +863,7 @@ function scheduleNextDip(){
   if(!dipEnabled) return;
   var gapMin = readDipNumber("dipGapMin",10);
   var gapMax = readDipNumber("dipGapMax",50);
-  var gap = rndFloat(gapMin, gapMax) * 1000;
+  var gap = rndInt(gapMin, gapMax) * 1000;
   dipTimerGap = setTimeout(beginDip, gap);
 }
 function beginDip(){
@@ -1074,7 +901,6 @@ function setDipEnabled(flag){
   localStorage.setItem(DIP_TOGGLE_KEY, dipEnabled ? "1" : "0");
   if(!dipEnabled){ clearDipTimers(); restoreNormalVolume(); }
   else { applyDipBaselineForPlay(); scheduleNextDip(); }
-  saveCurrentSessionSoon(false);
 }
 document.addEventListener("click", function(e){
   if(e.target && e.target.id === "dipSettingsBtn"){
@@ -1106,10 +932,9 @@ function setPlShuffle(flag){ localStorage.setItem(PL_SHUFFLE_KEY, flag?"1":"0");
 function isPlLoop(){ var v=localStorage.getItem(PL_LOOP_KEY); return v==="1"; }
 function setPlLoop(flag){ localStorage.setItem(PL_LOOP_KEY, flag?"1":"0"); try{ if(player && typeof player.setLoop==="function"){ player.setLoop(!!flag); } }catch(e){} }
 function initPlaylistUI(){
-  var s=$("plShuffleToggle"), l=$("plLoopToggle"), np=$("plNewSongToggle");
-  if(s){ s.checked = isPlShuffle(); s.onchange=function(){ setPlShuffle(s.checked); saveCurrentSessionSoon(false); }; }
-  if(l){ l.checked = isPlLoop(); l.onchange=function(){ setPlLoop(l.checked); saveCurrentSessionSoon(false); }; }
-  if(np){ np.checked = newSongAfterPauseEnabled; np.onchange=function(){ newSongAfterPauseEnabled = np.checked; localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1":"0"); saveCurrentSessionSoon(false); }; }
+  var s=$("plShuffleToggle"), l=$("plLoopToggle");
+  if(s){ s.checked = isPlShuffle(); s.onchange=function(){ setPlShuffle(s.checked); }; }
+  if(l){ l.checked = isPlLoop(); l.onchange=function(){ setPlLoop(l.checked); }; }
   try{
     if(player){
       if(typeof player.setShuffle==="function") player.setShuffle(isPlShuffle());
@@ -1118,6 +943,29 @@ function initPlaylistUI(){
   }catch(e){}
 }
 
+
+// Improv names + playlist advance on pause
+var FAMOUS_TOGGLE_KEY = "YT82_FAMOUS_ON";
+var NEW_SONG_AFTER_PAUSE_KEY = "YT82_NEW_SONG_AFTER_PAUSE";
+
+var famousEnabled = true; localStorage.setItem(FAMOUS_TOGGLE_KEY,"1");
+var newSongAfterPauseEnabled = (localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)===null) ? true : localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)==="1";
+
+var FamousNamesBase = ["Tom Hanks", "Meryl Streep", "Denzel Washington", "Leonardo DiCaprio", "Brad Pitt", "Angelina Jolie", "Robert De Niro", "Al Pacino", "Morgan Freeman", "Natalie Portman", "Scarlett Johansson", "Samuel L. Jackson", "Keanu Reeves", "Jennifer Lawrence", "Viola Davis", "Cate Blanchett", "Nicole Kidman", "Joaquin Phoenix", "Christian Bale", "Margot Robbie", "Zendaya", "Timoth\u00e9e Chalamet", "Robert Downey Jr.", "Gal Gadot", "Jason Momoa", "Henry Cavill", "Tom Holland", "Brie Larson", "Hugh Jackman", "Ryan Reynolds", "Chris Hemsworth", "Chris Evans", "Chris Pratt", "Emma Stone", "Emma Watson", "George Clooney", "Matt Damon", "Ben Affleck", "Julia Roberts", "Sandra Bullock", "Anne Hathaway", "Salma Hayek", "Halle Berry", "Charlize Theron", "Ryan Gosling", "Adam Driver", "Taylor Swift", "Beyonc\u00e9", "Rihanna", "Adele", "Drake", "Kanye West", "Jay-Z", "Billie Eilish", "Ed Sheeran", "Ariana Grande", "The Weeknd", "Lady Gaga", "Bruno Mars", "Justin Bieber", "Selena Gomez", "Katy Perry", "Harry Styles", "Olivia Rodrigo", "Dua Lipa", "Post Malone", "Kendrick Lamar", "Travis Scott", "SZA", "Doja Cat", "Bad Bunny", "Shakira", "J Balvin", "Maluma", "Lizzo", "Miley Cyrus", "Michael Jordan", "LeBron James", "Kobe Bryant", "Shaquille O'Neal", "Stephen Curry", "Lionel Messi", "Cristiano Ronaldo", "Neymar", "Kylian Mbapp\u00e9", "Serena Williams", "Roger Federer", "Rafael Nadal", "Novak Djokovic", "Simone Biles", "Usain Bolt", "Michael Phelps", "Tiger Woods", "Tom Brady", "Peyton Manning", "Mike Tyson", "Conor McGregor", "Ronda Rousey", "Lewis Hamilton", "Max Verstappen", "Naomi Osaka", "Megan Rapinoe", "Albert Einstein", "Isaac Newton", "Nikola Tesla", "Marie Curie", "Charles Darwin", "Galileo Galilei", "Ada Lovelace", "Alan Turing", "Stephen Hawking", "Elon Musk", "Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Jeff Bezos", "Larry Page", "Sergey Brin", "Tim Berners-Lee", "Katherine Johnson", "William Shakespeare", "J.K. Rowling", "Stephen King", "George R.R. Martin", "J.R.R. Tolkien", "Agatha Christie", "Ernest Hemingway", "Jane Austen", "Mark Twain", "Charles Dickens", "Haruki Murakami", "George Orwell", "Maya Angelou", "Toni Morrison", "Neil Gaiman", "Barack Obama", "Michelle Obama", "Joe Biden", "Kamala Harris", "Donald Trump", "Hillary Clinton", "Bernie Sanders", "Angela Merkel", "Emmanuel Macron", "Justin Trudeau", "Vladimir Putin", "Volodymyr Zelenskyy", "Xi Jinping", "Narendra Modi", "Nelson Mandela", "Winston Churchill", "Mahatma Gandhi", "Oprah Winfrey", "Ellen DeGeneres", "Jimmy Fallon", "Jimmy Kimmel", "Trevor Noah", "Stephen Colbert", "Dave Chappelle", "Kevin Hart", "Chris Rock", "John Oliver", "Conan O'Brien", "Harry Potter", "Hermione Granger", "Ron Weasley", "Darth Vader", "Luke Skywalker", "Princess Leia", "Han Solo", "Indiana Jones", "James Bond", "Sherlock Holmes", "Wonder Woman", "Batman", "Superman", "Spider-Man", "Black Panther", "Iron Man", "Captain America", "Thor", "Hulk", "Loki", "Wolverine", "Deadpool", "Katniss Everdeen", "Frodo Baggins", "Gandalf", "Aragorn", "Legolas", "Yoda", "Neo", "Trinity", "Morpheus", "Shah Rukh Khan", "Priyanka Chopra", "Aamir Khan", "Aishwarya Rai", "Deepika Padukone", "Jackie Chan", "Jet Li", "Donnie Yen", "RM (BTS)", "Jin (BTS)", "Suga (BTS)", "J-Hope (BTS)", "Jimin (BTS)", "V (BTS)", "Jungkook (BTS)", "Jisoo (BLACKPINK)", "Jennie (BLACKPINK)", "Ros\u00e9 (BLACKPINK)", "Lisa (BLACKPINK)", "PewDiePie", "MrBeast", "Ninja", "Pokimane", "Markiplier", "Jacksepticeye", "DanTDM", "Valkyrae", "Hayao Miyazaki", "Akira Toriyama", "Hideo Kojima", "Shigeru Miyamoto", "Satoru Iwata", "Reggie Fils-Aim\u00e9", "Greta Thunberg", "Malala Yousafzai", "Bono", "Sting", "Phil Collins", "Paul McCartney", "Ringo Starr", "Mick Jagger", "Keith Richards", "David Bowie", "Freddie Mercury", "Elton John", "Whitney Houston", "Prince", "Aretha Franklin", "Nirvana (Kurt Cobain)", "Dave Grohl", "Eminem", "Snoop Dogg", "Ice Cube", "Dr. Dre", "50 Cent", "Lil Wayne"];
+var FamousNames = FamousNamesBase.slice();
+while(FamousNames.length < 1000){ FamousNames = FamousNames.concat(FamousNamesBase); }
+function pickFamous(){ return FamousNames[Math.floor(Math.random()*FamousNames.length)]; }
+function showRandomName(){ 
+  if(!famousEnabled) return; 
+  setNameBannerText(pickFamous());
+}
+function initFamousUI(){
+  var ft = $("famousToggle");
+  if(ft){ ft.checked = famousEnabled; ft.onchange = function(){ famousEnabled = ft.checked; localStorage.setItem(FAMOUS_TOGGLE_KEY, famousEnabled ? "1":"0"); var el=$("nameBanner"); if(el) el.style.display = famousEnabled? "block":"none"; }; }
+  var np = $("plNewSongToggle");
+  if(np){ np.checked = newSongAfterPauseEnabled; np.onchange = function(){ newSongAfterPauseEnabled = np.checked; localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1":"0"); }; }
+  var nb = $("nameBanner"); if(nb) nb.style.display = "block";
+}
 
 function isPlaylistMode(){
   try{ 
@@ -1267,7 +1115,7 @@ function ensurePlayer(id, start){
       playerVars:{ rel:0, modestbranding:1, playsinline:1 },
       events:{ onStateChange:function(e){
         if(e.data===YT.PlayerState.PLAYING){
-          pauseOverlay.style.display="none"; setPlayUI(true,false); updateTrackMeta();
+          pauseOverlay.style.display="none"; setPlayUI(true,false);
           try{ if(!inPauseSegment){ forceStartPlayBar && forceStartPlayBar(); } }catch(ex){}
           if(!wmShown){ wmShown=true; wm.style.opacity="1"; setTimeout(function(){
       wm.style.opacity="0"; }, 7000); }
@@ -1324,7 +1172,7 @@ function prevIndex(){ if(items.length===0) return -1; if(randomToggle.checked){ 
 
 function loadByIndex(idx, autoStart){
   if(idx<0||idx>=items.length) return; currentIndex=idx;
-  var it=items[idx]; ensurePlayer(it.id, it.start||0); renderList(); updateTrackMeta(); saveCurrentSessionSoon(false);
+  var it=items[idx]; ensurePlayer(it.id, it.start||0); renderList();
   if(autoStart){ startPlayStepper(); }
 }
 function handleEnded(){ var ni=nextIndex(); if(ni<0) return; loadByIndex(ni, !bypassToggle.checked); }
@@ -1381,7 +1229,7 @@ function isPauseFirst(){ return localStorage.getItem(PAUSE_FIRST_KEY)==="1"; }
 function setPauseFirst(val){ localStorage.setItem(PAUSE_FIRST_KEY, val?"1":"0"); }
 (function initPauseFirst(){
   var el = document.getElementById("pauseFirstToggle");
-  if(el){ el.checked = isPauseFirst(); el.onchange = function(){ setPauseFirst(el.checked); saveCurrentSessionSoon(false); }; }
+  if(el){ el.checked = isPauseFirst(); el.onchange = function(){ setPauseFirst(el.checked); }; }
 })();
 
 
@@ -1574,45 +1422,42 @@ document.addEventListener("keydown", function(e){
 // ----- init -----
 (function init(){
   seedPresetsIfEmpty(); renderPresets(getPlaySec(), getPauseSec());
-  ensureSeedMusic(); ensureSeedVocal(); ensureSeedSpeech(); loadList("music"); renderList(); refreshTitlesForList();
-  initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
+  ensureSeedMusic(); ensureSeedVocal(); loadList("music"); renderList(); refreshTitlesForList();
+  
   ytReady.then(function(){
     if(items.length>0){
-      ensurePlayer(items[0].id, items[0].start||0);
-      currentIndex = 0;
-      updateTrackMeta();
+      var pick = 0;
+      try{
+        for(var i=0;i<items.length;i++){
+          if((items[i].title||"").toLowerCase().indexOf("hyperbolic club")!==-1){
+            pick = i; break;
+          }
+        }
+      }catch(e){}
+      ensurePlayer(items[pick].id, items[pick].start||0);
+      currentIndex = pick;
     } else {
       ensurePlayer(null,0);
     }
-    try{ restoreLastSession(); }catch(e){}
-    renderRecentSessions();
-    updateTrackMeta();
   });
 
-  (function autoloadDefaultPlaylist(){
-    try{
-      currentKind="playlists";
-      loadList(currentKind); renderList(); setTab("playlist");
-      initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
-      var k = storageKey("playlists");
-      var arr = JSON.parse(localStorage.getItem(k) || "[]");
-      var idx = -1;
-      for(var i=0;i<arr.length;i++){ if((arr[i].list||arr[i].id)==="PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K"){ idx=i; break; } }
-      if(idx===-1 && arr.length>0) idx = 0;
-      if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); updateTrackMeta(); }
-    }catch(e){}
-    try{ restoreLastSession(); renderRecentSessions(); updateTrackMeta(); }catch(e){}
-  })();
+  currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
 
-  ["pauseFirstToggle","dimToggle","randomToggle","bypassToggle","muteToggle","dipInvertToggle","dipSoftToggle","softIntroToggle"].forEach(function(id){
-    var el=$(id); if(!el) return;
-    el.addEventListener("change", function(){ saveCurrentSessionSoon(false); });
-  });
-  ["playBtn","pauseBtn","prevBtn","nextBtn","nextSegmentBtn","plPrevMainBtn","plNextMainBtn","plNextBtn"].forEach(function(id){
-    var el=$(id); if(!el) return;
-    el.addEventListener("click", function(){ updateTrackMeta(); saveCurrentSessionSoon(false); });
-  });
-  window.addEventListener("beforeunload", function(){ saveCurrentSession(true); });
+// v95: autoload default playlist on first view
+(function autoloadDefaultPlaylist(){
+  try{
+    currentKind="playlists";
+    loadList(currentKind); renderList(); setTab("playlist");
+    initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
+    var k = storageKey("playlists");
+    var arr = JSON.parse(localStorage.getItem(k) || "[]");
+    var idx = -1;
+    for(var i=0;i<arr.length;i++){ if((arr[i].list||arr[i].id)==="PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K"){ idx=i; break; } }
+    if(idx===-1 && arr.length>0) idx = 0;
+    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); }
+  }catch(e){}
+})();
+ initFamousUI(); initPlaylistUI();
 })();
 </script>
 <script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();</script>
