@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v99</title>
+<title>YT play/pause - v100</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
@@ -84,7 +84,7 @@
   .btn-main{min-width:90px;height:40px;}
   .btn-main.playing{background:var(--accent);}
   .btn-main.paused{background:#444b55;}
-  .playerWrap{position:relative;max-width:82%;margin:0 auto;}
+  .playerWrap{position:relative;max-width:78%;margin:0 auto;}
   iframe{width:100%;aspect-ratio:16/9;border-radius:12px;border:0;background:#000;}
   .pauseOverlay{position:absolute;inset:0;border-radius:12px;background:rgba(0,0,0,0.75);pointer-events:none;display:none;}
   .wm{position:absolute;left:50%;transform:translateX(-50%);top:20%;background:rgba(0,0,0,0.45);color:#e5e7eb;font-size:12px;padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);pointer-events:none;opacity:0;transition:opacity .25s ease;}
@@ -139,7 +139,7 @@
 <body>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><h1>YT play/pause - v99</h1></div>
+    <div class="titleRow"><h1>YT play/pause - v100</h1></div>
 
     <div class="playerWrap">
       <div id="player"></div>
@@ -153,11 +153,6 @@
     </div>
 
     
-    <div class="banner" style="margin-top:8px;">
-      <span>Track: <b id="currentTrackTitle">â€”</b></span>
-      <span style="margin-left:16px;">Archetype: <b id="archetypeText">Seeker</b></span>
-    </div>
-
     <!-- Row 1: toggles + dip settings -->
     <div class="row" style="margin-top:8px;">
       <div class="switchWrap" style="margin-left:8px;">
@@ -219,7 +214,7 @@
     <div class="banner tiny">
       Space = Play, P = Pause, &larr;/&rarr; = Prev/Next.
       <br>When session timer reaches 0, playback stops and will not continue.
-      <br>You can type values like <b>0.5</b>, <b>1.5 second</b>, <b>1.5 minute</b>, or <b>1:30</b> into time fields.
+      <br>You can type <b>0.5</b>, <b>1.5 second</b>, <b>1.5 minute</b>, or <b>1:30</b> in time fields.
     </div>
   </div>
 
@@ -356,9 +351,10 @@
   </div>
 
 
+
   <div id="recentSessionsCard" class="card" style="margin-top:8px;">
     <h2>Recent sessions (last 10)</h2>
-    <div class="banner tiny">Saved automatically while you use the app. Each entry stores time/date, timings, list type, selected track, and playlist-related settings. Click Load to recreate it.</div>
+    <div class="banner tiny">Autosaves while you use the app. Each item stores time/date, timings, current list, selected track, and playlist settings. Click Load to recreate it.</div>
     <div id="recentSessionsList" class="list" style="max-height:260px;"></div>
   </div>
 
@@ -423,24 +419,203 @@ function clampInt(v, minVal){ var n = parseInt(v,10); if(isNaN(n)) n = 0; if(typ
 function clampFloat(v, minVal){ var n = parseFloat(v); if(isNaN(n)) n = 0; if(typeof minVal === "number" && n < minVal) n = minVal; return n; }
 function fmtSec(t){ t = Math.max(0, Math.floor(t||0)); var m = Math.floor(t/60); var s = t % 60; return m + ":" + (s<10?"0":"") + s; }
 
-var ARCHETYPES=["Seeker","Caregiver","Warrior","Magician","Creator","Sage","Jester","Ruler","Rebel","Lover","Explorer","Mentor","Visionary","Companion","Servant","Performer"];
-var CURRENT_SESSION_KEY="YT99_CURRENT_SESSION";
-var SESSION_HISTORY_KEY="YT99_SESSION_HISTORY";
+var ARCHETYPES = ["Seeker","Caregiver","Warrior","Magician","Creator","Sage","Jester","Ruler","Rebel","Lover","Explorer","Mentor","Visionary","Companion","Servant","Performer"];
+var CURRENT_SESSION_KEY="YT100_CURRENT_SESSION";
+var SESSION_HISTORY_KEY="YT100_SESSION_HISTORY";
 var SESSION_SAVE_TIMER=null;
-var NEW_SONG_AFTER_PAUSE_KEY="YT82_NEW_SONG_AFTER_PAUSE";
-var newSongAfterPauseEnabled=(localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)===null)?true:localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)==="1";
-function parseFlexibleDuration(v,defaultUnit){var s=String(v==null?"":v).trim().toLowerCase();if(!s)return 0;s=s.replace(',', '.').replace(/\s+/g,' ');if(/^\d+(\.\d+)?\s*:\s*\d+(\.\d+)?$/.test(s)){var p=s.split(':');return (parseFloat(p[0])||0)*60+(parseFloat(p[1])||0);}var m=s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/);if(!m){var raw=parseFloat(s);return isNaN(raw)?0:(defaultUnit==="minute"?raw*60:raw);}var num=parseFloat(m[1]),unit=m[2]||"";if(isNaN(num))return 0;if(unit in {ms:1,msec:1,millisecond:1,milliseconds:1})return num/1000;if(unit in {s:1,sec:1,secs:1,second:1,seconds:1})return num;if(unit in {m:1,min:1,mins:1,minute:1,minutes:1})return num*60;return defaultUnit==="minute"?num*60:num;}
-function parseFlexibleMs(v,fallback){var s=String(v==null?"":v).trim().toLowerCase();if(!s)return fallback||0;s=s.replace(',', '.').replace(/\s+/g,' ');var m=s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/);if(!m){var raw=parseFloat(s);return isNaN(raw)?(fallback||0):raw;}var num=parseFloat(m[1]),unit=m[2]||"";if(unit in {s:1,sec:1,secs:1,second:1,seconds:1})return num*1000;if(unit in {m:1,min:1,mins:1,minute:1,minutes:1})return num*60000;return num;}
-function formatStamp(ts){try{return new Date(ts).toLocaleString();}catch(e){return "";}}
-function pickArchetype(seed){var s=String(seed||"");var sum=0;for(var i=0;i<s.length;i++)sum=(sum+s.charCodeAt(i)*(i+1))%2147483647;return ARCHETYPES[sum%ARCHETYPES.length];}
-function htmlEscape(s){return String(s||"").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function updateTrackMeta(){var title="";try{if(player&&typeof player.getVideoData==='function'){var d=player.getVideoData();if(d&&d.title)title=d.title;}}catch(e){}if(!title&&items&&currentIndex>=0&&items[currentIndex])title=items[currentIndex].title||"";var t=$("currentTrackTitle");if(t)t.textContent=title||"â€”";var a=$("archetypeText");if(a)a.textContent=pickArchetype(title||((items&&items[currentIndex]&&items[currentIndex].id)||"Seeker"));}
-function currentSessionState(){return {savedAt:Date.now(),currentKind:currentKind||"music",currentIndex:typeof currentIndex==='number'?currentIndex:-1,playMin:$("playMin")?$("playMin").value:"0",playSec:$("playSec")?$("playSec").value:"40",pauseMin:$("pauseMin")?$("pauseMin").value:"0",pauseSec:$("pauseSec")?$("pauseSec").value:"40",timerMin:$("timerMin")?$("timerMin").value:"30",pauseFirst:$("pauseFirstToggle")?!!$("pauseFirstToggle").checked:false,dimToggle:$("dimToggle")?!!$("dimToggle").checked:false,randomToggle:$("randomToggle")?!!$("randomToggle").checked:false,bypassToggle:$("bypassToggle")?!!$("bypassToggle").checked:false,muteToggle:$("muteToggle")?!!$("muteToggle").checked:false,dipToggle:$("dipToggle")?!!$("dipToggle").checked:false,dipLenMin:$("dipLenMin")?$("dipLenMin").value:"1.0",dipLenMax:$("dipLenMax")?$("dipLenMax").value:"4.0",dipGapMin:$("dipGapMin")?$("dipGapMin").value:"10",dipGapMax:$("dipGapMax")?$("dipGapMax").value:"50",dipVolumePct:$("dipVolumePct")?$("dipVolumePct").value:"10",dipInvertToggle:$("dipInvertToggle")?!!$("dipInvertToggle").checked:false,dipSoftToggle:$("dipSoftToggle")?!!$("dipSoftToggle").checked:false,softIntroToggle:$("softIntroToggle")?!!$("softIntroToggle").checked:false,dipFadeMs:$("dipFadeMs")?$("dipFadeMs").value:"800",plShuffle:$("plShuffleToggle")?!!$("plShuffleToggle").checked:false,plLoop:$("plLoopToggle")?!!$("plLoopToggle").checked:false,plNewSong:$("plNewSongToggle")?!!$("plNewSongToggle").checked:newSongAfterPauseEnabled,title:$("currentTrackTitle")?$("currentTrackTitle").textContent:""};}
-function saveCurrentSession(pushHistory){try{var state=currentSessionState();localStorage.setItem(CURRENT_SESSION_KEY,JSON.stringify(state));if(pushHistory!==false){var arr=JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY)||'[]');arr.unshift(state);arr=arr.slice(0,10);localStorage.setItem(SESSION_HISTORY_KEY,JSON.stringify(arr));}renderRecentSessions();}catch(e){}}
-function saveCurrentSessionSoon(pushHistory){if(SESSION_SAVE_TIMER)clearTimeout(SESSION_SAVE_TIMER);SESSION_SAVE_TIMER=setTimeout(function(){saveCurrentSession(pushHistory);},250);}
-function applySessionState(state){if(!state)return;try{if($("playMin")&&state.playMin!=null)$("playMin").value=state.playMin;if($("playSec")&&state.playSec!=null)$("playSec").value=state.playSec;if($("pauseMin")&&state.pauseMin!=null)$("pauseMin").value=state.pauseMin;if($("pauseSec")&&state.pauseSec!=null)$("pauseSec").value=state.pauseSec;if($("timerMin")&&state.timerMin!=null)$("timerMin").value=state.timerMin;if($("pauseFirstToggle"))$("pauseFirstToggle").checked=!!state.pauseFirst;if($("dimToggle"))$("dimToggle").checked=!!state.dimToggle;if($("randomToggle"))$("randomToggle").checked=!!state.randomToggle;if($("bypassToggle"))$("bypassToggle").checked=!!state.bypassToggle;if($("muteToggle"))$("muteToggle").checked=!!state.muteToggle;if($("dipToggle"))$("dipToggle").checked=!!state.dipToggle;if($("dipLenMin")&&state.dipLenMin!=null)$("dipLenMin").value=state.dipLenMin;if($("dipLenMax")&&state.dipLenMax!=null)$("dipLenMax").value=state.dipLenMax;if($("dipGapMin")&&state.dipGapMin!=null)$("dipGapMin").value=state.dipGapMin;if($("dipGapMax")&&state.dipGapMax!=null)$("dipGapMax").value=state.dipGapMax;if($("dipVolumePct")&&state.dipVolumePct!=null)$("dipVolumePct").value=state.dipVolumePct;if($("dipInvertToggle"))$("dipInvertToggle").checked=!!state.dipInvertToggle;if($("dipSoftToggle"))$("dipSoftToggle").checked=!!state.dipSoftToggle;if($("softIntroToggle"))$("softIntroToggle").checked=!!state.softIntroToggle;if($("dipFadeMs")&&state.dipFadeMs!=null)$("dipFadeMs").value=state.dipFadeMs;if($("plShuffleToggle"))$("plShuffleToggle").checked=!!state.plShuffle;if($("plLoopToggle"))$("plLoopToggle").checked=!!state.plLoop;if($("plNewSongToggle"))$("plNewSongToggle").checked=!!state.plNewSong;newSongAfterPauseEnabled=!!state.plNewSong;localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY,newSongAfterPauseEnabled?'1':'0');saveDipSettings();setDipEnabled(!!state.dipToggle);setPauseFirst(!!state.pauseFirst);if(state.currentKind){currentKind=state.currentKind;loadList(currentKind);renderList();Array.prototype.forEach.call(document.querySelectorAll('#pageUrls .btn-tab[data-kind]'),function(btn){btn.classList.toggle('active',btn.getAttribute('data-kind')===currentKind);});}if(typeof state.currentIndex==='number'&&state.currentIndex>=0&&items[state.currentIndex]){currentIndex=state.currentIndex;ensurePlayer(items[currentIndex].id,items[currentIndex].start||0);renderList();}updateTrackMeta();}catch(e){}}
-function restoreLastSession(){try{var raw=localStorage.getItem(CURRENT_SESSION_KEY);if(raw)applySessionState(JSON.parse(raw));}catch(e){}}
-function renderRecentSessions(){var root=$("recentSessionsList");if(!root)return;root.innerHTML='';var arr=[];try{arr=JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY)||'[]');}catch(e){arr=[];}if(!arr.length){var empty=document.createElement('div');empty.className='banner tiny';empty.textContent='No saved sessions yet.';root.appendChild(empty);return;}arr.slice(0,10).forEach(function(s,idx){var row=document.createElement('div');row.className='item';row.style.gridTemplateColumns='auto 1fr auto';var num=document.createElement('div');num.className='idx';num.textContent=String(idx+1);var mid=document.createElement('div');mid.innerHTML="<div style='font-size:13px;font-weight:600;'>"+htmlEscape(s.title||s.currentKind||'Session')+"</div><div class='tiny'>"+htmlEscape(formatStamp(s.savedAt)+' Â· Play '+(s.playMin||0)+' + '+(s.playSec||0)+' Â· Pause '+(s.pauseMin||0)+' + '+(s.pauseSec||0)+' Â· '+(s.currentKind||'music'))+"</div>";var btn=document.createElement('button');btn.textContent='Load';btn.onclick=function(){applySessionState(s);saveCurrentSessionSoon(false);};row.appendChild(num);row.appendChild(mid);row.appendChild(btn);root.appendChild(row);});}
+var NEW_SONG_AFTER_PAUSE_KEY = "YT82_NEW_SONG_AFTER_PAUSE";
+var newSongAfterPauseEnabled = (localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)===null) ? true : localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)==="1";
+
+function parseFlexibleDuration(v, defaultUnit){
+  var s = String(v==null ? "" : v).trim().toLowerCase();
+  if(!s) return 0;
+  s = s.replace(',', '.').replace(/\s+/g, ' ');
+  if(/^\d+(?:\.\d+)?\s*:\s*\d+(?:\.\d+)?$/.test(s)){
+    var parts = s.split(':');
+    return (parseFloat(parts[0])||0)*60 + (parseFloat(parts[1])||0);
+  }
+  var m = s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/);
+  if(!m){
+    var raw = parseFloat(s);
+    return isNaN(raw) ? 0 : (defaultUnit==="minute" ? raw*60 : raw);
+  }
+  var num = parseFloat(m[1]); var unit = m[2] || "";
+  if(isNaN(num)) return 0;
+  if(unit==="ms" || unit==="msec" || unit==="millisecond" || unit==="milliseconds") return num/1000;
+  if(unit==="s" || unit==="sec" || unit==="secs" || unit==="second" || unit==="seconds") return num;
+  if(unit==="m" || unit==="min" || unit==="mins" || unit==="minute" || unit==="minutes") return num*60;
+  return defaultUnit==="minute" ? num*60 : num;
+}
+function parseFlexibleMs(v, fallback){
+  var s = String(v==null ? "" : v).trim().toLowerCase();
+  if(!s) return fallback || 0;
+  s = s.replace(',', '.').replace(/\s+/g, ' ');
+  var m = s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/);
+  if(!m){
+    var raw = parseFloat(s);
+    return isNaN(raw) ? (fallback||0) : raw;
+  }
+  var num = parseFloat(m[1]); var unit = m[2] || "";
+  if(isNaN(num)) return fallback || 0;
+  if(unit==="s" || unit==="sec" || unit==="secs" || unit==="second" || unit==="seconds") return num*1000;
+  if(unit==="m" || unit==="min" || unit==="mins" || unit==="minute" || unit==="minutes") return num*60000;
+  return num;
+}
+function formatStamp(ts){ try{ return new Date(ts).toLocaleString(); }catch(e){ return ""; } }
+function escapeHtml(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function pickArchetype(seed){
+  var s = String(seed||"");
+  var sum = 0;
+  for(var i=0;i<s.length;i++) sum = (sum + s.charCodeAt(i)*(i+1)) % 2147483647;
+  return ARCHETYPES[sum % ARCHETYPES.length];
+}
+function updateTrackMeta(){
+  var title = "";
+  try{
+    if(player && typeof player.getVideoData==="function"){
+      var d = player.getVideoData();
+      if(d && d.title) title = d.title;
+    }
+  }catch(e){}
+  if(!title && items && currentIndex>=0 && items[currentIndex]) title = items[currentIndex].title || "";
+  var t = $("currentTrackTitle"); if(t) t.textContent = title || "â€”";
+  var a = $("archetypeText"); if(a) a.textContent = pickArchetype(title || ((items && items[currentIndex] && items[currentIndex].id) || "Seeker"));
+}
+function getSessionState(){
+  return {
+    savedAt: Date.now(),
+    currentKind: currentKind || "music",
+    currentIndex: typeof currentIndex==="number" ? currentIndex : -1,
+    playMin: $("playMin") ? $("playMin").value : "0",
+    playSec: $("playSec") ? $("playSec").value : "40",
+    pauseMin: $("pauseMin") ? $("pauseMin").value : "0",
+    pauseSec: $("pauseSec") ? $("pauseSec").value : "40",
+    timerMin: $("timerMin") ? $("timerMin").value : "30",
+    pauseFirst: $("pauseFirstToggle") ? !!$("pauseFirstToggle").checked : false,
+    dimToggle: $("dimToggle") ? !!$("dimToggle").checked : false,
+    randomToggle: $("randomToggle") ? !!$("randomToggle").checked : false,
+    bypassToggle: $("bypassToggle") ? !!$("bypassToggle").checked : false,
+    muteToggle: $("muteToggle") ? !!$("muteToggle").checked : false,
+    dipToggle: $("dipToggle") ? !!$("dipToggle").checked : false,
+    dipLenMin: $("dipLenMin") ? $("dipLenMin").value : "1.0",
+    dipLenMax: $("dipLenMax") ? $("dipLenMax").value : "4.0",
+    dipGapMin: $("dipGapMin") ? $("dipGapMin").value : "10",
+    dipGapMax: $("dipGapMax") ? $("dipGapMax").value : "50",
+    dipVolumePct: $("dipVolumePct") ? $("dipVolumePct").value : "10",
+    dipInvertToggle: $("dipInvertToggle") ? !!$("dipInvertToggle").checked : false,
+    dipSoftToggle: $("dipSoftToggle") ? !!$("dipSoftToggle").checked : false,
+    softIntroToggle: $("softIntroToggle") ? !!$("softIntroToggle").checked : false,
+    dipFadeMs: $("dipFadeMs") ? $("dipFadeMs").value : "800",
+    plShuffle: $("plShuffleToggle") ? !!$("plShuffleToggle").checked : false,
+    plLoop: $("plLoopToggle") ? !!$("plLoopToggle").checked : false,
+    plNewSong: $("plNewSongToggle") ? !!$("plNewSongToggle").checked : newSongAfterPauseEnabled,
+    title: $("currentTrackTitle") ? $("currentTrackTitle").textContent : ""
+  };
+}
+function saveCurrentSession(pushHistory){
+  try{
+    var state = getSessionState();
+    localStorage.setItem(CURRENT_SESSION_KEY, JSON.stringify(state));
+    if(pushHistory !== false){
+      var arr = [];
+      try{ arr = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || "[]") || []; }catch(e){ arr=[]; }
+      arr.unshift(state);
+      arr = arr.slice(0,10);
+      localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(arr));
+    }
+    renderRecentSessions();
+  }catch(e){}
+}
+function saveCurrentSessionSoon(pushHistory){
+  if(SESSION_SAVE_TIMER) clearTimeout(SESSION_SAVE_TIMER);
+  SESSION_SAVE_TIMER = setTimeout(function(){ saveCurrentSession(pushHistory); }, 250);
+}
+function applySessionState(state){
+  if(!state) return;
+  try{
+    if($("playMin") && state.playMin!=null) $("playMin").value = state.playMin;
+    if($("playSec") && state.playSec!=null) $("playSec").value = state.playSec;
+    if($("pauseMin") && state.pauseMin!=null) $("pauseMin").value = state.pauseMin;
+    if($("pauseSec") && state.pauseSec!=null) $("pauseSec").value = state.pauseSec;
+    if($("timerMin") && state.timerMin!=null) $("timerMin").value = state.timerMin;
+    if($("pauseFirstToggle")) $("pauseFirstToggle").checked = !!state.pauseFirst;
+    if($("dimToggle")) $("dimToggle").checked = !!state.dimToggle;
+    if($("randomToggle")) $("randomToggle").checked = !!state.randomToggle;
+    if($("bypassToggle")) $("bypassToggle").checked = !!state.bypassToggle;
+    if($("muteToggle")) $("muteToggle").checked = !!state.muteToggle;
+    if($("dipToggle")) $("dipToggle").checked = !!state.dipToggle;
+    if($("dipLenMin") && state.dipLenMin!=null) $("dipLenMin").value = state.dipLenMin;
+    if($("dipLenMax") && state.dipLenMax!=null) $("dipLenMax").value = state.dipLenMax;
+    if($("dipGapMin") && state.dipGapMin!=null) $("dipGapMin").value = state.dipGapMin;
+    if($("dipGapMax") && state.dipGapMax!=null) $("dipGapMax").value = state.dipGapMax;
+    if($("dipVolumePct") && state.dipVolumePct!=null) $("dipVolumePct").value = state.dipVolumePct;
+    if($("dipInvertToggle")) $("dipInvertToggle").checked = !!state.dipInvertToggle;
+    if($("dipSoftToggle")) $("dipSoftToggle").checked = !!state.dipSoftToggle;
+    if($("softIntroToggle")) $("softIntroToggle").checked = !!state.softIntroToggle;
+    if($("dipFadeMs") && state.dipFadeMs!=null) $("dipFadeMs").value = state.dipFadeMs;
+    if($("plShuffleToggle")) $("plShuffleToggle").checked = !!state.plShuffle;
+    if($("plLoopToggle")) $("plLoopToggle").checked = !!state.plLoop;
+    if($("plNewSongToggle")) $("plNewSongToggle").checked = !!state.plNewSong;
+    newSongAfterPauseEnabled = !!state.plNewSong;
+    localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1":"0");
+    setPauseFirst(!!state.pauseFirst);
+    saveDipSettings();
+    setDipEnabled(!!state.dipToggle);
+    setPlShuffle(!!state.plShuffle);
+    setPlLoop(!!state.plLoop);
+    if(state.currentKind){
+      currentKind = state.currentKind;
+      loadList(currentKind);
+      renderList();
+      Array.prototype.forEach.call(document.querySelectorAll("#pageUrls .btn-tab[data-kind]"), function(btn){
+        btn.classList.toggle("active", btn.getAttribute("data-kind")===currentKind);
+      });
+    }
+    if(typeof state.currentIndex==="number" && state.currentIndex>=0 && items[state.currentIndex]){
+      currentIndex = state.currentIndex;
+      ensurePlayer(items[currentIndex].id, items[currentIndex].start || 0);
+      renderList();
+    }
+    updateTrackMeta();
+  }catch(e){}
+}
+function restoreLastSession(){
+  try{
+    var raw = localStorage.getItem(CURRENT_SESSION_KEY);
+    if(raw) applySessionState(JSON.parse(raw));
+  }catch(e){}
+}
+function renderRecentSessions(){
+  var root = $("recentSessionsList");
+  if(!root) return;
+  root.innerHTML = "";
+  var arr = [];
+  try{ arr = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || "[]") || []; }catch(e){ arr=[]; }
+  if(!arr.length){
+    var empty = document.createElement("div");
+    empty.className = "banner tiny";
+    empty.textContent = "No saved sessions yet.";
+    root.appendChild(empty);
+    return;
+  }
+  arr.slice(0,10).forEach(function(s, idx){
+    var row = document.createElement("div");
+    row.className = "item";
+    row.style.gridTemplateColumns = "auto 1fr auto";
+    var n = document.createElement("div");
+    n.className = "idx";
+    n.textContent = String(idx+1);
+    var mid = document.createElement("div");
+    mid.innerHTML = "<div style='font-size:13px;font-weight:600;'>" + escapeHtml(s.title || s.currentKind || "Session") + "</div><div class='tiny'>" +
+      escapeHtml(formatStamp(s.savedAt) + " Â· Play " + (s.playMin||0) + " + " + (s.playSec||0) + " Â· Pause " + (s.pauseMin||0) + " + " + (s.pauseSec||0) + " Â· " + (s.currentKind||"music")) +
+      "</div>";
+    var btn = document.createElement("button");
+    btn.textContent = "Load";
+    btn.onclick = function(){ applySessionState(s); saveCurrentSessionSoon(false); };
+    row.appendChild(n); row.appendChild(mid); row.appendChild(btn);
+    root.appendChild(row);
+  });
+}
 
 
 // ----- tabs (URL lists always visible) -----
@@ -465,12 +640,12 @@ tabPlayer.onclick=function(){ currentKind="playlists"; loadList(currentKind); re
     var idx = -1;
     for(var i=0;i<arr.length;i++){ if((arr[i].list||arr[i].id)==="PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K"){ idx=i; break; } }
     if(idx===-1 && arr.length>0) idx = 0;
-    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); updateTrackMeta(); saveCurrentSessionSoon(false); }
+    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); }
   }catch(e){}
 })();
  initPlaylistUI(); };
 tabUrls.onclick=function(){ setTab("urls"); };
-tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); };
+tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); initFamousUI(); };
 
 // ----- lists -----
 var LIST_KINDS=["speech","music","vocal","playlists"];
@@ -619,12 +794,8 @@ function refreshTitlesForList(){ items.forEach(function(it){ if(!it||!it.id) ret
 }); }
 
 // ----- timer + presets -----
-function getPlaySec(){
-  return Math.max(0, parseFlexibleDuration($("playMin").value, "minute") + parseFlexibleDuration($("playSec").value, "second"));
-}
-function getPauseSec(){
-  return Math.max(0, parseFlexibleDuration($("pauseMin").value, "minute") + parseFlexibleDuration($("pauseSec").value, "second"));
-}
+function getPlaySec(){ return Math.max(0, parseFlexibleDuration($("playMin").value, "minute") + parseFlexibleDuration($("playSec").value, "second")); }
+function getPauseSec(){ return Math.max(0, parseFlexibleDuration($("pauseMin").value, "minute") + parseFlexibleDuration($("pauseSec").value, "second")); }
 function setFromSeconds(minEl,secEl,total){ total=Math.max(0,+total||0); var m=Math.floor(total/60), s=Math.round((total%60)*10)/10; minEl.value=String(m); secEl.value=String(s); }
 var PRESETS_KEY="YT52_PRESETS";
 function loadPresets(){ try{ var raw=localStorage.getItem(PRESETS_KEY); return raw ? (JSON.parse(raw)||[]) : []; }catch(e){ return []; } }
@@ -771,9 +942,12 @@ function saveDipSettings(){
   var inv = readDipFlag("dipInvertToggle", DIP_INVERT_KEY);
   var soft = readDipFlag("dipSoftToggle", DIP_SOFT_KEY);
   var softIntro = readDipFlag("softIntroToggle", SOFT_INTRO_KEY);
-  var v1n = parseFlexibleDuration(v1, "second"), v2n = parseFlexibleDuration(v2, "second"), g1n = parseFlexibleDuration(g1, "second"), g2n = parseFlexibleDuration(g2, "second");
-  if(v2n < v1n){ v2n=v1n; if($("dipLenMax")) $("dipLenMax").value=String(v2n);}
-  if(g2n < g1n){ g2n=g1n; if($("dipGapMax")) $("dipGapMax").value=String(g2n);}
+  var v1n = parseFlexibleDuration(v1, "second");
+  var v2n = parseFlexibleDuration(v2, "second");
+  var g1n = parseFlexibleDuration(g1, "second");
+  var g2n = parseFlexibleDuration(g2, "second");
+  if(v2n < v1n){ v2n = v1n; if($("dipLenMax")) $("dipLenMax").value = String(v2n); }
+  if(g2n < g1n){ g2n = g1n; if($("dipGapMax")) $("dipGapMax").value = String(g2n); }
   localStorage.setItem(DIP_LEN_MIN_KEY, $("dipLenMin") ? $("dipLenMin").value : String(v1n));
   localStorage.setItem(DIP_LEN_MAX_KEY, $("dipLenMax") ? $("dipLenMax").value : String(v2n));
   localStorage.setItem(DIP_GAP_MIN_KEY, $("dipGapMin") ? $("dipGapMin").value : String(g1n));
@@ -935,7 +1109,7 @@ function initPlaylistUI(){
   var s=$("plShuffleToggle"), l=$("plLoopToggle"), np=$("plNewSongToggle");
   if(s){ s.checked = isPlShuffle(); s.onchange=function(){ setPlShuffle(s.checked); saveCurrentSessionSoon(false); }; }
   if(l){ l.checked = isPlLoop(); l.onchange=function(){ setPlLoop(l.checked); saveCurrentSessionSoon(false); }; }
-  if(np){ np.checked = newSongAfterPauseEnabled; np.onchange=function(){ newSongAfterPauseEnabled=np.checked; localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY,newSongAfterPauseEnabled?"1":"0"); saveCurrentSessionSoon(false); }; }
+  if(np){ np.checked = newSongAfterPauseEnabled; np.onchange=function(){ newSongAfterPauseEnabled = np.checked; localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1":"0"); saveCurrentSessionSoon(false); }; }
   try{
     if(player){
       if(typeof player.setShuffle==="function") player.setShuffle(isPlShuffle());
@@ -1400,64 +1574,47 @@ document.addEventListener("keydown", function(e){
 // ----- init -----
 (function init(){
   seedPresetsIfEmpty(); renderPresets(getPlaySec(), getPauseSec());
-  ensureSeedMusic(); ensureSeedVocal(); loadList("music"); renderList(); refreshTitlesForList();
-  
+  ensureSeedMusic(); ensureSeedVocal(); ensureSeedSpeech(); loadList("music"); renderList(); refreshTitlesForList();
+  initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
   ytReady.then(function(){
     if(items.length>0){
-      var pick = 0;
-      try{
-        for(var i=0;i<items.length;i++){
-          if((items[i].title||"").toLowerCase().indexOf("hyperbolic club")!==-1){
-            pick = i; break;
-          }
-        }
-      }catch(e){}
-      ensurePlayer(items[pick].id, items[pick].start||0);
-      currentIndex = pick;
+      ensurePlayer(items[0].id, items[0].start||0);
+      currentIndex = 0;
+      updateTrackMeta();
     } else {
       ensurePlayer(null,0);
     }
+    try{ restoreLastSession(); }catch(e){}
+    renderRecentSessions();
+    updateTrackMeta();
   });
 
-  currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initDipUI(); initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
+  (function autoloadDefaultPlaylist(){
+    try{
+      currentKind="playlists";
+      loadList(currentKind); renderList(); setTab("playlist");
+      initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
+      var k = storageKey("playlists");
+      var arr = JSON.parse(localStorage.getItem(k) || "[]");
+      var idx = -1;
+      for(var i=0;i<arr.length;i++){ if((arr[i].list||arr[i].id)==="PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K"){ idx=i; break; } }
+      if(idx===-1 && arr.length>0) idx = 0;
+      if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); updateTrackMeta(); }
+    }catch(e){}
+    try{ restoreLastSession(); renderRecentSessions(); updateTrackMeta(); }catch(e){}
+  })();
 
-// v95: autoload default playlist on first view
-(function autoloadDefaultPlaylist(){
-  try{
-    currentKind="playlists";
-    loadList(currentKind); renderList(); setTab("playlist");
-    initPlaylistUI(); updatePlaylistControlsVisibility(); initPlayerSizeUI();
-    var k = storageKey("playlists");
-    var arr = JSON.parse(localStorage.getItem(k) || "[]");
-    var idx = -1;
-    for(var i=0;i<arr.length;i++){ if((arr[i].list||arr[i].id)==="PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K"){ idx=i; break; } }
-    if(idx===-1 && arr.length>0) idx = 0;
-    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); updateTrackMeta(); saveCurrentSessionSoon(false); }
-  }catch(e){}
+  ["pauseFirstToggle","dimToggle","randomToggle","bypassToggle","muteToggle","dipInvertToggle","dipSoftToggle","softIntroToggle"].forEach(function(id){
+    var el=$(id); if(!el) return;
+    el.addEventListener("change", function(){ saveCurrentSessionSoon(false); });
+  });
+  ["playBtn","pauseBtn","prevBtn","nextBtn","nextSegmentBtn","plPrevMainBtn","plNextMainBtn","plNextBtn"].forEach(function(id){
+    var el=$(id); if(!el) return;
+    el.addEventListener("click", function(){ updateTrackMeta(); saveCurrentSessionSoon(false); });
+  });
+  window.addEventListener("beforeunload", function(){ saveCurrentSession(true); });
 })();
- initFamousUI(); initPlaylistUI();
-})();
-document.addEventListener("DOMContentLoaded", function(){
-  try{
-    restoreLastSession();
-    renderRecentSessions();
-    updateTrackMeta();
-    ["pauseFirstToggle","dimToggle","randomToggle","bypassToggle","muteToggle","dipInvertToggle","dipSoftToggle","softIntroToggle"].forEach(function(id){ var el=$(id); if(!el) return; el.addEventListener("change", function(){ saveCurrentSessionSoon(false); }); });
-    ["playBtn","pauseBtn","prevBtn","nextBtn","nextSegmentBtn","plPrevMainBtn","plNextMainBtn","plNextBtn"].forEach(function(id){ var el=$(id); if(!el) return; el.addEventListener("click", function(){ updateTrackMeta(); saveCurrentSessionSoon(false); }); });
-  }catch(e){}
-});
-window.addEventListener("beforeunload", function(){ saveCurrentSession(true); });
 </script>
-<script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();document.addEventListener("DOMContentLoaded", function(){
-  try{
-    restoreLastSession();
-    renderRecentSessions();
-    updateTrackMeta();
-    ["pauseFirstToggle","dimToggle","randomToggle","bypassToggle","muteToggle","dipInvertToggle","dipSoftToggle","softIntroToggle"].forEach(function(id){ var el=$(id); if(!el) return; el.addEventListener("change", function(){ saveCurrentSessionSoon(false); }); });
-    ["playBtn","pauseBtn","prevBtn","nextBtn","nextSegmentBtn","plPrevMainBtn","plNextMainBtn","plNextBtn"].forEach(function(id){ var el=$(id); if(!el) return; el.addEventListener("click", function(){ updateTrackMeta(); saveCurrentSessionSoon(false); }); });
-  }catch(e){}
-});
-window.addEventListener("beforeunload", function(){ saveCurrentSession(true); });
-</script>
+<script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();</script>
 </body>
 </html>
