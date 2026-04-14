@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v101</title>
+<title>YT play/pause - v99</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
+  .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
+
   :root{ --player-aspect: 16/9; }
   .playerWrap iframe{ aspect-ratio: var(--player-aspect, 16/9); }
+  .titleRow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .nameBannerHead{font-weight:700;font-size:14px;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;min-height:30px;display:flex;align-items:center;}
   .btn-toggle{border:1px solid #2b313b;background:#151922;color:#e5e7eb;border-radius:10px;padding:8px 10px;font-size:12px;cursor:pointer;}
   .btn-toggle.active{outline:1px solid #3b82f6;background:#0f1525;}
 
@@ -80,14 +84,14 @@
   .btn-main{min-width:90px;height:40px;}
   .btn-main.playing{background:var(--accent);}
   .btn-main.paused{background:#444b55;}
-  .playerWrap{position:relative;}
+  .playerWrap{position:relative;max-width:82%;margin:0 auto;}
   iframe{width:100%;aspect-ratio:16/9;border-radius:12px;border:0;background:#000;}
   .pauseOverlay{position:absolute;inset:0;border-radius:12px;background:rgba(0,0,0,0.75);pointer-events:none;display:none;}
   .wm{position:absolute;left:50%;transform:translateX(-50%);top:20%;background:rgba(0,0,0,0.45);color:#e5e7eb;font-size:12px;padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);pointer-events:none;opacity:0;transition:opacity .25s ease;}
   label{font-size:12px;color:var(--muted);display:block;margin-bottom:2px;}
   input[type="number"],input[type="text"]{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #2a2d33;background:#0f1115;color:var(--fg);outline:none;font-size:14px;}
-  input[type="number"]{max-width:70px;}
-  input[type="text"]{max-width:170px;}
+  input[type="number"]{max-width:90px;}
+  input.timeField{max-width:170px;}
   .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:999px;background:#20242c;border:1px solid #2b313b;font-size:12px;color:#e5e7eb;}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
   .chip{padding:4px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--chip-border);font-size:12px;cursor:pointer;white-space:nowrap;}
@@ -135,12 +139,12 @@
 <body>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><h1>YT play/pause - v101</h1></div>
+    <div class="titleRow"><h1>YT play/pause - v99</h1></div>
 
     <div class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v99</div>
+      <div id="wm" class="wm">Jimmy James &middot; 12.12.2025 &middot; v98</div>
     </div>
 
     <!-- Green/Red shrinking bargraph -->
@@ -149,6 +153,11 @@
     </div>
 
     
+    <div class="banner" style="margin-top:8px;">
+      <span>Track: <b id="currentTrackTitle">â€”</b></span>
+      <span style="margin-left:16px;">Archetype: <b id="archetypeText">Seeker</b></span>
+    </div>
+
     <!-- Row 1: toggles + dip settings -->
     <div class="row" style="margin-top:8px;">
       <div class="switchWrap" style="margin-left:8px;">
@@ -163,19 +172,19 @@
 <div class="row" style="margin-top:6px;align-items:flex-end;">
       <div class="row nowrap">
         <div>
-          <label>Play (minutes + seconds, decimals ok)</label>
+          <label>Play (minutes + seconds)</label>
           <div class="row">
-            <input id="playMin" type="text" value="0" placeholder="0 or 1.5 minute">
+            <input id="playMin" class="timeField" type="text" value="0" placeholder="0 or 1.5 minute">
             <span>:</span>
-            <input id="playSec" type="text" value="40" placeholder="40 or 0.5 second">
+            <input id="playSec" class="timeField" type="text" value="40" placeholder="40 or 0.5 second">
           </div>
         </div>
         <div>
-          <label>Pause (minutes + seconds, decimals ok)</label>
+          <label>Pause (minutes + seconds)</label>
           <div class="row">
-            <input id="pauseMin" type="text" value="0" placeholder="0 or 1.5 minute">
+            <input id="pauseMin" class="timeField" type="text" value="0" placeholder="0 or 1.5 minute">
             <span>:</span>
-            <input id="pauseSec" type="text" value="40" placeholder="40 or 0.5 second">
+            <input id="pauseSec" class="timeField" type="text" value="40" placeholder="40 or 0.5 second">
           </div>
         
         
@@ -198,7 +207,7 @@
 
     <div class="timerRow">
       <span class="tiny">Session timer (minutes):</span>
-      <input id="timerMin" type="text" value="30" placeholder="30 or 1.5 minute">
+      <input id="timerMin" class="timeField" type="text" value="30" placeholder="30 or 1.5 minute">
       <label class="switch">
         <input id="timerToggle" type="checkbox">
         <span class="slider"></span>
@@ -210,7 +219,7 @@
     <div class="banner tiny">
       Space = Play, P = Pause, &larr;/&rarr; = Prev/Next.
       <br>When session timer reaches 0, playback stops and will not continue.
-      <br>You can type <b>0.5</b>, <b>1.5 second</b>, <b>1.5 minute</b>, or <b>1:30</b> in time fields.
+      <br>You can type values like <b>0.5</b>, <b>1.5 second</b>, <b>1.5 minute</b>, or <b>1:30</b> into time fields.
     </div>
   </div>
 
@@ -300,17 +309,17 @@
       <div>
         <label>Dip length (seconds, decimals ok): min</label>
         <div class="row">
-          <input id="dipLenMin" type="text" value="1.0" placeholder="0.1 or 1.5 second">
+          <input id="dipLenMin" class="timeField" type="text" value="1.0" placeholder="0.1 or 1.5 second">
           <span>to</span>
-          <input id="dipLenMax" type="text" value="4.0" placeholder="4.0 or 1.5 second">
+          <input id="dipLenMax" class="timeField" type="text" value="4.0" placeholder="4.0 or 1.5 second">
         </div>
       </div>
       <div>
         <label>Dip gap (seconds between dips, decimals ok): min</label>
         <div class="row">
-          <input id="dipGapMin" type="text" value="10" placeholder="10 or 0.5 second">
+          <input id="dipGapMin" class="timeField" type="text" value="10" placeholder="10 or 0.5 second">
           <span>to</span>
-          <input id="dipGapMax" type="text" value="50" placeholder="50 or 1.5 second">
+          <input id="dipGapMax" class="timeField" type="text" value="50" placeholder="50 or 1.5 second">
         </div>
       </div>
       <div>
@@ -340,17 +349,16 @@
       </div>
       <div>
         <label>Fade ms</label>
-        <input id="dipFadeMs" type="text" value="800" placeholder="800 or 0.8 second">
+        <input id="dipFadeMs" class="timeField" type="text" value="800" placeholder="800 or 0.8 second">
       </div>
     </div>
     <div class="banner tiny">During <b>Play</b> segments, the audio briefly reduces (or mutes) for a random length between min/max, at random gaps between min/max. You can type values like <b>0.2</b>, <b>1.5 second</b>, or <b>1.5 minute</b>. <b>Invert</b> reverses it, so the dip volume is outside the window and full volume plays only inside the window. <b>Soft fade</b> smooths dip changes. <b>Soft intro</b> smooths play/pause changes.</div>
   </div>
 
 
-
   <div id="recentSessionsCard" class="card" style="margin-top:8px;">
     <h2>Recent sessions (last 10)</h2>
-    <div class="banner tiny">Autosaves the current setup while you use the app. Each item stores time/date, timings, current list, selected track, and playlist state. Click Load to restore.</div>
+    <div class="banner tiny">Saved automatically while you use the app. Each entry stores time/date, timings, list type, selected track, and playlist-related settings. Click Load to recreate it.</div>
     <div id="recentSessionsList" class="list" style="max-height:260px;"></div>
   </div>
 
@@ -413,264 +421,27 @@ async function fetchTitleForId(id, isPlaylist){
 }
 function clampInt(v, minVal){ var n = parseInt(v,10); if(isNaN(n)) n = 0; if(typeof minVal === "number" && n < minVal) n = minVal; return n; }
 function clampFloat(v, minVal){ var n = parseFloat(v); if(isNaN(n)) n = 0; if(typeof minVal === "number" && n < minVal) n = minVal; return n; }
-
-function parseFlexibleDuration(v, defaultUnit){
-  var s = String(v==null ? "" : v).trim().toLowerCase();
-  if(!s) return 0;
-  s = s.replace(',', '.').replace(/\s+/g, ' ');
-  if(/^\d+(\.\d+)?\s*:\s*\d+(\.\d+)?$/.test(s)){
-    var parts = s.split(':');
-    var m = parseFloat(parts[0]) || 0;
-    var sec = parseFloat(parts[1]) || 0;
-    return m*60 + sec;
-  }
-  var match = s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/i);
-  if(!match){
-    var raw = parseFloat(s);
-    return isNaN(raw) ? 0 : (defaultUnit==="minute" ? raw*60 : raw);
-  }
-  var num = parseFloat(match[1]);
-  var unit = match[2] || "";
-  if(isNaN(num)) return 0;
-  if(unit in {"ms":1,"msec":1,"millisecond":1,"milliseconds":1}) return num/1000;
-  if(unit in {"s":1,"sec":1,"secs":1,"second":1,"seconds":1}) return num;
-  if(unit in {"m":1,"min":1,"mins":1,"minute":1,"minutes":1}) return num*60;
-  return defaultUnit==="minute" ? num*60 : num;
-}
-function parseFlexibleMs(v, defaultMs){
-  var s = String(v==null ? "" : v).trim().toLowerCase();
-  if(!s) return defaultMs || 0;
-  s = s.replace(',', '.').replace(/\s+/g, ' ');
-  var match = s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/i);
-  if(!match){
-    var raw = parseFloat(s);
-    return isNaN(raw) ? (defaultMs||0) : raw;
-  }
-  var num = parseFloat(match[1]);
-  var unit = match[2] || "";
-  if(isNaN(num)) return defaultMs || 0;
-  if(unit in {"s":1,"sec":1,"secs":1,"second":1,"seconds":1}) return num*1000;
-  if(unit in {"m":1,"min":1,"mins":1,"minute":1,"minutes":1}) return num*60000;
-  return num;
-}
-function formatSecondsInput(sec){
-  sec = Math.max(0, +sec || 0);
-  if(Math.abs(sec - Math.round(sec)) < 1e-9) return String(Math.round(sec));
-  return String(Math.round(sec*10)/10);
-}
-function formatMinutesInput(min){
-  min = Math.max(0, +min || 0);
-  if(Math.abs(min - Math.round(min)) < 1e-9) return String(Math.round(min));
-  return String(Math.round(min*10)/10);
-}
 function fmtSec(t){ t = Math.max(0, Math.floor(t||0)); var m = Math.floor(t/60); var s = t % 60; return m + ":" + (s<10?"0":"") + s; }
 
-var ARCHETYPES = [
-  "Seeker","Caregiver","Warrior","Magician","Creator","Sage","Jester","Ruler","Rebel","Lover",
-  "Innocent","Explorer","Visionary","Servant","Artist","Mentor","Advocate","Mystic","Performer","Companion"
-];
-var SESSION_STATE_KEY = "YT100_CURRENT_SESSION";
-var SESSION_HISTORY_KEY = "YT100_SESSION_HISTORY";
-var SESSION_SAVE_TIMER = null;
-function pickArchetype(seed){
-  var s = String(seed || "");
-  var n = 0;
-  for(var i=0;i<s.length;i++) n = (n + s.charCodeAt(i)*(i+1)) % 2147483647;
-  return ARCHETYPES[n % ARCHETYPES.length];
-}
-function setArchetypeForCurrent(){
-  var it = items && currentIndex>=0 ? items[currentIndex] : null;
-  var label = it ? pickArchetype((it.title||"")+"|"+(it.id||"")) : "Seeker";
-  var el = $("archetypeText");
-  if(el) el.textContent = label;
-}
-function fmtSessionStamp(ts){
-  try{
-    var d = new Date(ts);
-    if(isNaN(d.getTime())) return "";
-    return d.toLocaleString();
-  }catch(e){ return ""; }
-}
-function collectCurrentSessionState(){
-  return {
-    savedAt: Date.now(),
-    currentKind: currentKind || "music",
-    currentIndex: (typeof currentIndex==="number" ? currentIndex : -1),
-    playMin: $("playMin") ? $("playMin").value : "0",
-    playSec: $("playSec") ? $("playSec").value : "40",
-    pauseMin: $("pauseMin") ? $("pauseMin").value : "0",
-    pauseSec: $("pauseSec") ? $("pauseSec").value : "40",
-    timerMin: $("timerMin") ? $("timerMin").value : "30",
-    pauseFirst: $("pauseFirstToggle") ? !!$("pauseFirstToggle").checked : false,
-    dimOnPause: $("dimToggle") ? !!$("dimToggle").checked : false,
-    randomOrder: $("randomToggle") ? !!$("randomToggle").checked : false,
-    bypassTiming: $("bypassToggle") ? !!$("bypassToggle").checked : false,
-    muteToggle: $("muteToggle") ? !!$("muteToggle").checked : false,
-    dipToggle: $("dipToggle") ? !!$("dipToggle").checked : false,
-    dipLenMin: $("dipLenMin") ? $("dipLenMin").value : "1.0",
-    dipLenMax: $("dipLenMax") ? $("dipLenMax").value : "4.0",
-    dipGapMin: $("dipGapMin") ? $("dipGapMin").value : "10",
-    dipGapMax: $("dipGapMax") ? $("dipGapMax").value : "50",
-    dipVolumePct: $("dipVolumePct") ? $("dipVolumePct").value : "10",
-    dipInvertToggle: $("dipInvertToggle") ? !!$("dipInvertToggle").checked : false,
-    dipSoftToggle: $("dipSoftToggle") ? !!$("dipSoftToggle").checked : false,
-    softIntroToggle: $("softIntroToggle") ? !!$("softIntroToggle").checked : false,
-    dipFadeMs: $("dipFadeMs") ? $("dipFadeMs").value : "800",
-    plShuffle: $("plShuffleToggle") ? !!$("plShuffleToggle").checked : isPlShuffle(),
-    plLoop: $("plLoopToggle") ? !!$("plLoopToggle").checked : isPlLoop(),
-    plNewSong: $("plNewSongToggle") ? !!$("plNewSongToggle").checked : newSongAfterPauseEnabled,
-    currentItemId: (items && currentIndex>=0 && items[currentIndex]) ? (items[currentIndex].id || "") : "",
-    currentItemTitle: (items && currentIndex>=0 && items[currentIndex]) ? (items[currentIndex].title || "") : ""
-  };
-}
-function saveCurrentSessionNow(pushHistory){
-  try{
-    var state = collectCurrentSessionState();
-    localStorage.setItem(SESSION_STATE_KEY, JSON.stringify(state));
-    if(pushHistory !== false){
-      var arr = [];
-      try{ arr = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || "[]") || []; }catch(e){ arr=[]; }
-      arr.unshift(state);
-      var seen = {};
-      arr = arr.filter(function(x){
-        var key = [x.currentKind,x.currentIndex,x.playMin,x.playSec,x.pauseMin,x.pauseSec,x.currentItemId].join("|");
-        if(seen[key]) return false;
-        seen[key] = 1;
-        return true;
-      }).slice(0,10);
-      localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(arr));
-    }
-    renderRecentSessions();
-  }catch(e){}
-}
-function saveCurrentSessionSoon(pushHistory){
-  if(SESSION_SAVE_TIMER) clearTimeout(SESSION_SAVE_TIMER);
-  SESSION_SAVE_TIMER = setTimeout(function(){ saveCurrentSessionNow(pushHistory); }, 250);
-}
-function applySessionState(state){
-  if(!state) return;
-  try{
-    if($("playMin")) $("playMin").value = state.playMin ?? $("playMin").value;
-    if($("playSec")) $("playSec").value = state.playSec ?? $("playSec").value;
-    if($("pauseMin")) $("pauseMin").value = state.pauseMin ?? $("pauseMin").value;
-    if($("pauseSec")) $("pauseSec").value = state.pauseSec ?? $("pauseSec").value;
-    if($("timerMin")) $("timerMin").value = state.timerMin ?? $("timerMin").value;
-    if($("pauseFirstToggle")) { $("pauseFirstToggle").checked = !!state.pauseFirst; setPauseFirst(!!state.pauseFirst); }
-    if($("dimToggle")) $("dimToggle").checked = !!state.dimOnPause;
-    if($("randomToggle")) $("randomToggle").checked = !!state.randomOrder;
-    if($("bypassToggle")) $("bypassToggle").checked = !!state.bypassTiming;
-    if($("muteToggle")) $("muteToggle").checked = !!state.muteToggle;
-    if($("dipToggle")) $("dipToggle").checked = !!state.dipToggle;
-    if($("dipLenMin") && state.dipLenMin!=null) $("dipLenMin").value = state.dipLenMin;
-    if($("dipLenMax") && state.dipLenMax!=null) $("dipLenMax").value = state.dipLenMax;
-    if($("dipGapMin") && state.dipGapMin!=null) $("dipGapMin").value = state.dipGapMin;
-    if($("dipGapMax") && state.dipGapMax!=null) $("dipGapMax").value = state.dipGapMax;
-    if($("dipVolumePct") && state.dipVolumePct!=null) $("dipVolumePct").value = state.dipVolumePct;
-    if($("dipInvertToggle")) $("dipInvertToggle").checked = !!state.dipInvertToggle;
-    if($("dipSoftToggle")) $("dipSoftToggle").checked = !!state.dipSoftToggle;
-    if($("softIntroToggle")) $("softIntroToggle").checked = !!state.softIntroToggle;
-    if($("dipFadeMs") && state.dipFadeMs!=null) $("dipFadeMs").value = state.dipFadeMs;
-    if($("plShuffleToggle")) $("plShuffleToggle").checked = !!state.plShuffle;
-    if($("plLoopToggle")) $("plLoopToggle").checked = !!state.plLoop;
-    if($("plNewSongToggle")) $("plNewSongToggle").checked = !!state.plNewSong;
-    setPlShuffle(!!state.plShuffle);
-    setPlLoop(!!state.plLoop);
-    newSongAfterPauseEnabled = !!state.plNewSong;
-    localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1" : "0");
-    saveDipSettings && saveDipSettings();
-    setDipEnabled && setDipEnabled(!!state.dipToggle);
-    if(state.currentKind){
-      currentKind = state.currentKind;
-      loadList(currentKind);
-      var btns = document.querySelectorAll("#pageUrls .btn-tab[data-kind]");
-      Array.prototype.forEach.call(btns, function(b){ b.classList.toggle("active", b.getAttribute("data-kind")===currentKind); });
-      renderList();
-    }
-    if(typeof state.currentIndex === "number" && state.currentIndex >= 0 && items && items[state.currentIndex]){
-      currentIndex = state.currentIndex;
-      renderList();
-      setArchetypeForCurrent();
-      if(items[currentIndex]) ensurePlayer(items[currentIndex].id, items[currentIndex].start||0);
-    }
-    renderPresets(getPlaySec(), getPauseSec());
-  }catch(e){}
-}
-function restoreLastSession(){
-  try{
-    var raw = localStorage.getItem(SESSION_STATE_KEY);
-    if(!raw) return;
-    var state = JSON.parse(raw);
-    applySessionState(state);
-  }catch(e){}
-}
-function renderRecentSessions(){
-  var root = $("recentSessionsList");
-  if(!root) return;
-  root.innerHTML = "";
-  var arr = [];
-  try{ arr = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || "[]") || []; }catch(e){ arr=[]; }
-  if(!arr.length){
-    var empty = document.createElement("div");
-    empty.className = "banner tiny";
-    empty.textContent = "No saved sessions yet.";
-    root.appendChild(empty);
-    return;
-  }
-  arr.slice(0,10).forEach(function(s, idx){
-    var row = document.createElement("div");
-    row.className = "item";
-    row.style.gridTemplateColumns = "auto 1fr auto";
-    var left = document.createElement("div");
-    left.className = "idx";
-    left.textContent = String(idx+1);
-    var mid = document.createElement("div");
-    mid.innerHTML = "<div style='font-size:13px; font-weight:600;'>" + 
-      htmlEscape((s.currentItemTitle || s.currentItemId || s.currentKind || "Session")) + 
-      "</div><div class='tiny'>" + 
-      htmlEscape(fmtSessionStamp(s.savedAt) + " Â· " + (s.currentKind||"music") + " Â· Play " + (s.playMin||0) + ":" + pad2(s.playSec||0) + " Â· Pause " + (s.pauseMin||0) + ":" + pad2(s.pauseSec||0)) +
-      "</div>";
-    var btn = document.createElement("button");
-    btn.textContent = "Load";
-    btn.onclick = function(){ applySessionState(s); saveCurrentSessionSoon(false); };
-    row.appendChild(left); row.appendChild(mid); row.appendChild(btn);
-    root.appendChild(row);
-  });
-}
-function pad2(v){
-  v = String(v==null ? "" : v);
-  return v.length<2 ? ("0"+v) : v;
-}
-function htmlEscape(s){
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-}
+var ARCHETYPES=["Seeker","Caregiver","Warrior","Magician","Creator","Sage","Jester","Ruler","Rebel","Lover","Explorer","Mentor","Visionary","Companion","Servant","Performer"];
+var CURRENT_SESSION_KEY="YT99_CURRENT_SESSION";
+var SESSION_HISTORY_KEY="YT99_SESSION_HISTORY";
+var SESSION_SAVE_TIMER=null;
+var NEW_SONG_AFTER_PAUSE_KEY="YT82_NEW_SONG_AFTER_PAUSE";
+var newSongAfterPauseEnabled=(localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)===null)?true:localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)==="1";
+function parseFlexibleDuration(v,defaultUnit){var s=String(v==null?"":v).trim().toLowerCase();if(!s)return 0;s=s.replace(',', '.').replace(/\s+/g,' ');if(/^\d+(\.\d+)?\s*:\s*\d+(\.\d+)?$/.test(s)){var p=s.split(':');return (parseFloat(p[0])||0)*60+(parseFloat(p[1])||0);}var m=s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/);if(!m){var raw=parseFloat(s);return isNaN(raw)?0:(defaultUnit==="minute"?raw*60:raw);}var num=parseFloat(m[1]),unit=m[2]||"";if(isNaN(num))return 0;if(unit in {ms:1,msec:1,millisecond:1,milliseconds:1})return num/1000;if(unit in {s:1,sec:1,secs:1,second:1,seconds:1})return num;if(unit in {m:1,min:1,mins:1,minute:1,minutes:1})return num*60;return defaultUnit==="minute"?num*60:num;}
+function parseFlexibleMs(v,fallback){var s=String(v==null?"":v).trim().toLowerCase();if(!s)return fallback||0;s=s.replace(',', '.').replace(/\s+/g,' ');var m=s.match(/^(-?\d+(?:\.\d+)?)\s*([a-z]+)?$/);if(!m){var raw=parseFloat(s);return isNaN(raw)?(fallback||0):raw;}var num=parseFloat(m[1]),unit=m[2]||"";if(unit in {s:1,sec:1,secs:1,second:1,seconds:1})return num*1000;if(unit in {m:1,min:1,mins:1,minute:1,minutes:1})return num*60000;return num;}
+function formatStamp(ts){try{return new Date(ts).toLocaleString();}catch(e){return "";}}
+function pickArchetype(seed){var s=String(seed||"");var sum=0;for(var i=0;i<s.length;i++)sum=(sum+s.charCodeAt(i)*(i+1))%2147483647;return ARCHETYPES[sum%ARCHETYPES.length];}
+function htmlEscape(s){return String(s||"").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function updateTrackMeta(){var title="";try{if(player&&typeof player.getVideoData==='function'){var d=player.getVideoData();if(d&&d.title)title=d.title;}}catch(e){}if(!title&&items&&currentIndex>=0&&items[currentIndex])title=items[currentIndex].title||"";var t=$("currentTrackTitle");if(t)t.textContent=title||"â€”";var a=$("archetypeText");if(a)a.textContent=pickArchetype(title||((items&&items[currentIndex]&&items[currentIndex].id)||"Seeker"));}
+function currentSessionState(){return {savedAt:Date.now(),currentKind:currentKind||"music",currentIndex:typeof currentIndex==='number'?currentIndex:-1,playMin:$("playMin")?$("playMin").value:"0",playSec:$("playSec")?$("playSec").value:"40",pauseMin:$("pauseMin")?$("pauseMin").value:"0",pauseSec:$("pauseSec")?$("pauseSec").value:"40",timerMin:$("timerMin")?$("timerMin").value:"30",pauseFirst:$("pauseFirstToggle")?!!$("pauseFirstToggle").checked:false,dimToggle:$("dimToggle")?!!$("dimToggle").checked:false,randomToggle:$("randomToggle")?!!$("randomToggle").checked:false,bypassToggle:$("bypassToggle")?!!$("bypassToggle").checked:false,muteToggle:$("muteToggle")?!!$("muteToggle").checked:false,dipToggle:$("dipToggle")?!!$("dipToggle").checked:false,dipLenMin:$("dipLenMin")?$("dipLenMin").value:"1.0",dipLenMax:$("dipLenMax")?$("dipLenMax").value:"4.0",dipGapMin:$("dipGapMin")?$("dipGapMin").value:"10",dipGapMax:$("dipGapMax")?$("dipGapMax").value:"50",dipVolumePct:$("dipVolumePct")?$("dipVolumePct").value:"10",dipInvertToggle:$("dipInvertToggle")?!!$("dipInvertToggle").checked:false,dipSoftToggle:$("dipSoftToggle")?!!$("dipSoftToggle").checked:false,softIntroToggle:$("softIntroToggle")?!!$("softIntroToggle").checked:false,dipFadeMs:$("dipFadeMs")?$("dipFadeMs").value:"800",plShuffle:$("plShuffleToggle")?!!$("plShuffleToggle").checked:false,plLoop:$("plLoopToggle")?!!$("plLoopToggle").checked:false,plNewSong:$("plNewSongToggle")?!!$("plNewSongToggle").checked:newSongAfterPauseEnabled,title:$("currentTrackTitle")?$("currentTrackTitle").textContent:""};}
+function saveCurrentSession(pushHistory){try{var state=currentSessionState();localStorage.setItem(CURRENT_SESSION_KEY,JSON.stringify(state));if(pushHistory!==false){var arr=JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY)||'[]');arr.unshift(state);arr=arr.slice(0,10);localStorage.setItem(SESSION_HISTORY_KEY,JSON.stringify(arr));}renderRecentSessions();}catch(e){}}
+function saveCurrentSessionSoon(pushHistory){if(SESSION_SAVE_TIMER)clearTimeout(SESSION_SAVE_TIMER);SESSION_SAVE_TIMER=setTimeout(function(){saveCurrentSession(pushHistory);},250);}
+function applySessionState(state){if(!state)return;try{if($("playMin")&&state.playMin!=null)$("playMin").value=state.playMin;if($("playSec")&&state.playSec!=null)$("playSec").value=state.playSec;if($("pauseMin")&&state.pauseMin!=null)$("pauseMin").value=state.pauseMin;if($("pauseSec")&&state.pauseSec!=null)$("pauseSec").value=state.pauseSec;if($("timerMin")&&state.timerMin!=null)$("timerMin").value=state.timerMin;if($("pauseFirstToggle"))$("pauseFirstToggle").checked=!!state.pauseFirst;if($("dimToggle"))$("dimToggle").checked=!!state.dimToggle;if($("randomToggle"))$("randomToggle").checked=!!state.randomToggle;if($("bypassToggle"))$("bypassToggle").checked=!!state.bypassToggle;if($("muteToggle"))$("muteToggle").checked=!!state.muteToggle;if($("dipToggle"))$("dipToggle").checked=!!state.dipToggle;if($("dipLenMin")&&state.dipLenMin!=null)$("dipLenMin").value=state.dipLenMin;if($("dipLenMax")&&state.dipLenMax!=null)$("dipLenMax").value=state.dipLenMax;if($("dipGapMin")&&state.dipGapMin!=null)$("dipGapMin").value=state.dipGapMin;if($("dipGapMax")&&state.dipGapMax!=null)$("dipGapMax").value=state.dipGapMax;if($("dipVolumePct")&&state.dipVolumePct!=null)$("dipVolumePct").value=state.dipVolumePct;if($("dipInvertToggle"))$("dipInvertToggle").checked=!!state.dipInvertToggle;if($("dipSoftToggle"))$("dipSoftToggle").checked=!!state.dipSoftToggle;if($("softIntroToggle"))$("softIntroToggle").checked=!!state.softIntroToggle;if($("dipFadeMs")&&state.dipFadeMs!=null)$("dipFadeMs").value=state.dipFadeMs;if($("plShuffleToggle"))$("plShuffleToggle").checked=!!state.plShuffle;if($("plLoopToggle"))$("plLoopToggle").checked=!!state.plLoop;if($("plNewSongToggle"))$("plNewSongToggle").checked=!!state.plNewSong;newSongAfterPauseEnabled=!!state.plNewSong;localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY,newSongAfterPauseEnabled?'1':'0');saveDipSettings();setDipEnabled(!!state.dipToggle);setPauseFirst(!!state.pauseFirst);if(state.currentKind){currentKind=state.currentKind;loadList(currentKind);renderList();Array.prototype.forEach.call(document.querySelectorAll('#pageUrls .btn-tab[data-kind]'),function(btn){btn.classList.toggle('active',btn.getAttribute('data-kind')===currentKind);});}if(typeof state.currentIndex==='number'&&state.currentIndex>=0&&items[state.currentIndex]){currentIndex=state.currentIndex;ensurePlayer(items[currentIndex].id,items[currentIndex].start||0);renderList();}updateTrackMeta();}catch(e){}}
+function restoreLastSession(){try{var raw=localStorage.getItem(CURRENT_SESSION_KEY);if(raw)applySessionState(JSON.parse(raw));}catch(e){}}
+function renderRecentSessions(){var root=$("recentSessionsList");if(!root)return;root.innerHTML='';var arr=[];try{arr=JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY)||'[]');}catch(e){arr=[];}if(!arr.length){var empty=document.createElement('div');empty.className='banner tiny';empty.textContent='No saved sessions yet.';root.appendChild(empty);return;}arr.slice(0,10).forEach(function(s,idx){var row=document.createElement('div');row.className='item';row.style.gridTemplateColumns='auto 1fr auto';var num=document.createElement('div');num.className='idx';num.textContent=String(idx+1);var mid=document.createElement('div');mid.innerHTML="<div style='font-size:13px;font-weight:600;'>"+htmlEscape(s.title||s.currentKind||'Session')+"</div><div class='tiny'>"+htmlEscape(formatStamp(s.savedAt)+' Â· Play '+(s.playMin||0)+' + '+(s.playSec||0)+' Â· Pause '+(s.pauseMin||0)+' + '+(s.pauseSec||0)+' Â· '+(s.currentKind||'music'))+"</div>";var btn=document.createElement('button');btn.textContent='Load';btn.onclick=function(){applySessionState(s);saveCurrentSessionSoon(false);};row.appendChild(num);row.appendChild(mid);row.appendChild(btn);root.appendChild(row);});}
 
-
-var TIME_SETTINGS_KEY="YT99_TIME_SETTINGS";
-function readTimeSettings(){
-  try{
-    var raw = localStorage.getItem(TIME_SETTINGS_KEY);
-    return raw ? (JSON.parse(raw) || {}) : {};
-  }catch(e){ return {}; }
-}
-function saveTimeSettings(){
-  try{
-    localStorage.setItem(TIME_SETTINGS_KEY, JSON.stringify({
-      playMin: $("playMin") ? $("playMin").value : "0",
-      playSec: $("playSec") ? $("playSec").value : "40",
-      pauseMin: $("pauseMin") ? $("pauseMin").value : "0",
-      pauseSec: $("pauseSec") ? $("pauseSec").value : "40",
-      timerMin: $("timerMin") ? $("timerMin").value : "30"
-    }));
-  }catch(e){}
-}
-function restoreTimeSettings(){
-  var s = readTimeSettings();
-  if($("playMin") && s.playMin != null) $("playMin").value = s.playMin;
-  if($("playSec") && s.playSec != null) $("playSec").value = s.playSec;
-  if($("pauseMin") && s.pauseMin != null) $("pauseMin").value = s.pauseMin;
-  if($("pauseSec") && s.pauseSec != null) $("pauseSec").value = s.pauseSec;
-  if($("timerMin") && s.timerMin != null) $("timerMin").value = s.timerMin;
-}
 
 // ----- tabs (URL lists always visible) -----
 var tabPlayer=$("tabPlayer"), tabUrls=$("tabUrls"), tabPlaylist=$("tabPlaylist");
@@ -694,12 +465,12 @@ tabPlayer.onclick=function(){ currentKind="playlists"; loadList(currentKind); re
     var idx = -1;
     for(var i=0;i<arr.length;i++){ if((arr[i].list||arr[i].id)==="PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K"){ idx=i; break; } }
     if(idx===-1 && arr.length>0) idx = 0;
-    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); setArchetypeForCurrent(); saveCurrentSessionSoon(false); }
+    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); updateTrackMeta(); saveCurrentSessionSoon(false); }
   }catch(e){}
 })();
- initPauseAdvanceUI(); initPlaylistUI(); };
+ initPlaylistUI(); };
 tabUrls.onclick=function(){ setTab("urls"); };
-tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); initPauseAdvanceUI(); };
+tabPlaylist.onclick=function(){ currentKind="playlists"; loadList(currentKind); renderList(); setTab("playlist"); initPlaylistUI(); };
 
 // ----- lists -----
 var LIST_KINDS=["speech","music","vocal","playlists"];
@@ -794,7 +565,7 @@ function renderList(){
     topBtn.onclick=function(){ moveToTop(idx); };
     var idxBox=document.createElement("div"); idxBox.className="idx"; idxBox.textContent=""+(idx+1);
     var titleInput=document.createElement("input"); titleInput.className="titleInput"; titleInput.value=it.title||"(untitled)";
-    titleInput.onchange=function(){ items[idx].title = titleInput.value.trim() || items[idx].title; saveList(); saveCurrentSessionSoon(); setArchetypeForCurrent(); };
+    titleInput.onchange=function(){ items[idx].title = titleInput.value.trim() || items[idx].title; saveList(); updateTrackMeta(); saveCurrentSessionSoon(false); };
     var trashBtn=document.createElement("button"); trashBtn.className="btn-icon"; trashBtn.textContent="Trash"; trashBtn.onclick=function(){ deleteItem(idx); };
     var copyBtn=document.createElement("button"); copyBtn.className="btn-icon"; copyBtn.textContent="Copy"; copyBtn.onclick=function(){
       var url=idToUrl(it.id); if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).catch(function(){ alert("URL: "+url); }); } else { alert("URL: "+url); }
@@ -812,11 +583,11 @@ async function addUrl(raw){
   if(!id && currentKind==="playlists"){ var pid=parsePlaylistId(raw); if(pid){ id=pid; isPlaylist=true; } }
   if(!id) return;
   var title=id; try{ title = await fetchTitleForId(id,isPlaylist); }catch(e){}
-  items.unshift({id:id,title:title||id,start:parseStartSeconds(raw)}); saveList(); renderList(); saveCurrentSessionSoon();
+  items.unshift({id:id,title:title||id,start:parseStartSeconds(raw)}); saveList(); renderList(); saveCurrentSessionSoon(false);
 }
-function moveToTop(idx){ if(idx<=0||idx>=items.length) return; var x=items.splice(idx,1)[0]; items.unshift(x); currentIndex=0; saveList(); renderList(); saveCurrentSessionSoon(); }
-function moveItem(idx,dir){ var ni=idx+dir; if(ni<0||ni>=items.length) return; var t=items[idx]; items[idx]=items[ni]; items[ni]=t; if(currentIndex===idx) currentIndex=ni; else if(currentIndex===ni) currentIndex=idx; saveList(); renderList(); saveCurrentSessionSoon(); }
-function deleteItem(idx){ if(idx<0||idx>=items.length) return; items.splice(idx,1); if(currentIndex>=items.length) currentIndex=items.length-1; saveList(); renderList(); saveCurrentSessionSoon(); }
+function moveToTop(idx){ if(idx<=0||idx>=items.length) return; var x=items.splice(idx,1)[0]; items.unshift(x); currentIndex=0; saveList(); renderList(); saveCurrentSessionSoon(false); }
+function moveItem(idx,dir){ var ni=idx+dir; if(ni<0||ni>=items.length) return; var t=items[idx]; items[idx]=items[ni]; items[ni]=t; if(currentIndex===idx) currentIndex=ni; else if(currentIndex===ni) currentIndex=idx; saveList(); renderList(); saveCurrentSessionSoon(false); }
+function deleteItem(idx){ if(idx<0||idx>=items.length) return; items.splice(idx,1); if(currentIndex>=items.length) currentIndex=items.length-1; saveList(); renderList(); saveCurrentSessionSoon(false); }
 var urlKindButtons=[]; Array.prototype.forEach.call(document.querySelectorAll("#pageUrls .btn-tab[data-kind]"), function(btn){
   urlKindButtons.push(btn);
   btn.onclick=function(){ var k=btn.getAttribute("data-kind"); if(LIST_KINDS.indexOf(k)===-1) k="speech";
@@ -839,7 +610,7 @@ $("importFile").onchange=function(e){ var f=e.target.files && e.target.files[0];
       if(typeof entry==="string"){ src=entry; } else if(entry&&typeof entry==="object"){ src=entry.url||entry.href||entry.id||""; title=entry.title||""; start=entry.start||0; }
       var id=parseVideoId(String(src||"").trim()); if(id) next.push({id:id,title:title||id,start:start});
     });
-    if(next.length){ items=next; saveList(); renderList(); refreshTitlesForList(); saveCurrentSessionSoon(); }
+    if(next.length){ items=next; saveList(); renderList(); refreshTitlesForList(); saveCurrentSessionSoon(false); }
   }catch(e){} }; reader.readAsText(f); this.value="";
 };
 function refreshTitlesForList(){ items.forEach(function(it){ if(!it||!it.id) return; var need=!it.title||it.title===it.id||it.title==="(untitled)";
@@ -849,16 +620,12 @@ function refreshTitlesForList(){ items.forEach(function(it){ if(!it||!it.id) ret
 
 // ----- timer + presets -----
 function getPlaySec(){
-  var m = parseFlexibleDuration($("playMin").value, "minute");
-  var s = parseFlexibleDuration($("playSec").value, "second");
-  return Math.max(0, m + s);
+  return Math.max(0, parseFlexibleDuration($("playMin").value, "minute") + parseFlexibleDuration($("playSec").value, "second"));
 }
 function getPauseSec(){
-  var m = parseFlexibleDuration($("pauseMin").value, "minute");
-  var s = parseFlexibleDuration($("pauseSec").value, "second");
-  return Math.max(0, m + s);
+  return Math.max(0, parseFlexibleDuration($("pauseMin").value, "minute") + parseFlexibleDuration($("pauseSec").value, "second"));
 }
-function setFromSeconds(minEl,secEl,total){ total=Math.max(0,+total||0); var m=Math.floor(total/60), s=Math.round((total%60)*10)/10; minEl.value=String(m); secEl.value=formatSecondsInput(s); }
+function setFromSeconds(minEl,secEl,total){ total=Math.max(0,+total||0); var m=Math.floor(total/60), s=Math.round((total%60)*10)/10; minEl.value=String(m); secEl.value=String(s); }
 var PRESETS_KEY="YT52_PRESETS";
 function loadPresets(){ try{ var raw=localStorage.getItem(PRESETS_KEY); return raw ? (JSON.parse(raw)||[]) : []; }catch(e){ return []; } }
 function savePresets(arr){ try{ localStorage.setItem(PRESETS_KEY, JSON.stringify(arr)); }catch(e){} }
@@ -874,8 +641,7 @@ function renderPresets(activePlay,activePause){
     root.appendChild(chip);
   });
 }
-["playMin","playSec","pauseMin","pauseSec","timerMin","dipLenMin","dipLenMax","dipGapMin","dipGapMax","dipVolumePct","dipFadeMs"].forEach(function(id){ var el=$(id); if(!el) return; ["focus","click"].forEach(function(evt){ el.addEventListener(evt, function(){ try{el.select();}catch(e){} }); }); ["change","input"].forEach(function(evt){ el.addEventListener(evt, function(){ saveCurrentSessionSoon(false); }); }); });
-["playMin","playSec","pauseMin","pauseSec","timerMin"].forEach(function(id){ var el=$(id); if(!el) return; ["input","change"].forEach(function(evt){ el.addEventListener(evt, saveTimeSettings); }); });
+["playMin","playSec","pauseMin","pauseSec","timerMin","dipLenMin","dipLenMax","dipGapMin","dipGapMax","dipVolumePct","dipFadeMs"].forEach(function(id){ var el=$(id); if(!el) return; ["focus","click"].forEach(function(evt){ el.addEventListener(evt, function(){ try{el.select();}catch(e){} }); }); ["input","change"].forEach(function(evt){ el.addEventListener(evt, function(){ saveCurrentSessionSoon(false); }); }); });
 
 // session timer
 var timerEnabled=false, timerDeadline=0, timerIv=null;
@@ -883,13 +649,13 @@ function updateTimerBadge(){ var badge=$("timerLeft"); if(!timerEnabled){ badge.
   badge.style.display="inline-flex"; badge.textContent="Left: "+fmtSec(Math.floor(ms/1000));
 }
 function stopTimer(){ timerEnabled=false; if(timerIv){ clearInterval(timerIv); timerIv=null; } $("timerToggle").checked=false; updateTimerBadge(); }
-function startTimer(){ var mins=Math.max(0.1, parseFlexibleDuration($("timerMin").value, "minute")/60); $("timerMin").value=formatMinutesInput(mins); timerEnabled=true; timerDeadline=Date.now()+mins*60*1000;
+function startTimer(){ var mins=Math.max(0.1, parseFlexibleDuration($("timerMin").value, "minute")/60); $("timerMin").value=String(Math.round(mins*10)/10); timerEnabled=true; timerDeadline=Date.now()+mins*60*1000;
   if(timerIv) clearInterval(timerIv); timerIv=setInterval(function(){ var ms=timerDeadline - Date.now();
     if(ms<=0){ clearInterval(timerIv); timerIv=null; timerEnabled=false; updateTimerBadge(); pauseNow(); return; } updateTimerBadge();
   }, 500); updateTimerBadge();
 }
-$("timerToggle").onchange=function(){ if(this.checked) startTimer(); else stopTimer(); saveCurrentSessionSoon(); };
-$("timerResetBtn").onclick=function(){ if(timerEnabled) startTimer(); else updateTimerBadge(); saveCurrentSessionSoon(); };
+$("timerToggle").onchange=function(){ if(this.checked) startTimer(); else stopTimer(); saveCurrentSessionSoon(false); };
+$("timerResetBtn").onclick=function(){ if(timerEnabled) startTimer(); else updateTimerBadge(); saveCurrentSessionSoon(false); };
 
 // ----- Bargraph logic (play=green, pause=red) -----
 var barEl = $("bargraphFill");
@@ -954,9 +720,9 @@ var introFadeTimer = null;
 
 function readDipNumber(id, dflt){
   var el = document.getElementById(id);
-  var value = el ? el.value : dflt;
-  if(id==="dipFadeMs") return parseFlexibleMs(value, dflt);
-  return parseFlexibleDuration(value, "second");
+  var raw = el ? el.value : dflt;
+  if(id==="dipFadeMs") return parseFlexibleMs(raw, dflt);
+  return parseFlexibleDuration(raw, "second");
 }
 function readDipFlag(id, key){
   var el = document.getElementById(id);
@@ -974,7 +740,7 @@ function rndFloat(minVal, maxVal){
   return minVal + Math.random() * (maxVal - minVal);
 }
 function applyDipSettingsToInputs(){
-  function get(k, d){ var v = localStorage.getItem(k); return v===null? d : v; }
+  function get(k, d){ var v = localStorage.getItem(k); return v===null ? d : v; }
   var v1 = get(DIP_LEN_MIN_KEY, "1.0"), v2 = get(DIP_LEN_MAX_KEY, "4.0");
   var g1 = get(DIP_GAP_MIN_KEY, "10"), g2 = get(DIP_GAP_MAX_KEY, "50");
   var vp = get(DIP_VOL_KEY, "10");
@@ -983,7 +749,6 @@ function applyDipSettingsToInputs(){
   var soft = (localStorage.getItem(DIP_SOFT_KEY)==="1");
   var softIntro = (localStorage.getItem(SOFT_INTRO_KEY)==="1");
   var fadeMs = get(DIP_FADE_MS_KEY, "800");
-
   var el;
   if(el=document.getElementById("dipLenMin")) el.value = v1;
   if(el=document.getElementById("dipLenMax")) el.value = v2;
@@ -997,28 +762,22 @@ function applyDipSettingsToInputs(){
   if(el=document.getElementById("dipFadeMs")) el.value = fadeMs;
 }
 function saveDipSettings(){
-  var v1Raw = $("dipLenMin") ? $("dipLenMin").value : "1.0";
-  var v2Raw = $("dipLenMax") ? $("dipLenMax").value : "4.0";
-  var g1Raw = $("dipGapMin") ? $("dipGapMin").value : "10";
-  var g2Raw = $("dipGapMax") ? $("dipGapMax").value : "50";
+  var v1 = $("dipLenMin") ? $("dipLenMin").value : "1.0";
+  var v2 = $("dipLenMax") ? $("dipLenMax").value : "4.0";
+  var g1 = $("dipGapMin") ? $("dipGapMin").value : "10";
+  var g2 = $("dipGapMax") ? $("dipGapMax").value : "50";
   var vp = readDipNumber("dipVolumePct",10);
   var fadeMs = readDipNumber("dipFadeMs",800);
   var inv = readDipFlag("dipInvertToggle", DIP_INVERT_KEY);
   var soft = readDipFlag("dipSoftToggle", DIP_SOFT_KEY);
   var softIntro = readDipFlag("softIntroToggle", SOFT_INTRO_KEY);
-
-  var v1 = parseFlexibleDuration(v1Raw, "second");
-  var v2 = parseFlexibleDuration(v2Raw, "second");
-  var g1 = parseFlexibleDuration(g1Raw, "second");
-  var g2 = parseFlexibleDuration(g2Raw, "second");
-
-  if(v2 < v1) { v2 = v1; if($("dipLenMax")) $("dipLenMax").value = formatSecondsInput(v2); }
-  if(g2 < g1) { g2 = g1; if($("dipGapMax")) $("dipGapMax").value = formatSecondsInput(g2); }
-
-  localStorage.setItem(DIP_LEN_MIN_KEY, $("dipLenMin") ? $("dipLenMin").value : formatSecondsInput(v1));
-  localStorage.setItem(DIP_LEN_MAX_KEY, $("dipLenMax") ? $("dipLenMax").value : formatSecondsInput(v2));
-  localStorage.setItem(DIP_GAP_MIN_KEY, $("dipGapMin") ? $("dipGapMin").value : formatSecondsInput(g1));
-  localStorage.setItem(DIP_GAP_MAX_KEY, $("dipGapMax") ? $("dipGapMax").value : formatSecondsInput(g2));
+  var v1n = parseFlexibleDuration(v1, "second"), v2n = parseFlexibleDuration(v2, "second"), g1n = parseFlexibleDuration(g1, "second"), g2n = parseFlexibleDuration(g2, "second");
+  if(v2n < v1n){ v2n=v1n; if($("dipLenMax")) $("dipLenMax").value=String(v2n);}
+  if(g2n < g1n){ g2n=g1n; if($("dipGapMax")) $("dipGapMax").value=String(g2n);}
+  localStorage.setItem(DIP_LEN_MIN_KEY, $("dipLenMin") ? $("dipLenMin").value : String(v1n));
+  localStorage.setItem(DIP_LEN_MAX_KEY, $("dipLenMax") ? $("dipLenMax").value : String(v2n));
+  localStorage.setItem(DIP_GAP_MIN_KEY, $("dipGapMin") ? $("dipGapMin").value : String(g1n));
+  localStorage.setItem(DIP_GAP_MAX_KEY, $("dipGapMax") ? $("dipGapMax").value : String(g2n));
   localStorage.setItem(DIP_VOL_KEY, String(Math.max(0, Math.min(100, vp))));
   localStorage.setItem(DIP_INVERT_KEY, inv ? "1" : "0");
   localStorage.setItem(DIP_SOFT_KEY, soft ? "1" : "0");
@@ -1174,9 +933,9 @@ function isPlLoop(){ var v=localStorage.getItem(PL_LOOP_KEY); return v==="1"; }
 function setPlLoop(flag){ localStorage.setItem(PL_LOOP_KEY, flag?"1":"0"); try{ if(player && typeof player.setLoop==="function"){ player.setLoop(!!flag); } }catch(e){} }
 function initPlaylistUI(){
   var s=$("plShuffleToggle"), l=$("plLoopToggle"), np=$("plNewSongToggle");
-  if(s){ s.checked = isPlShuffle(); s.onchange=function(){ setPlShuffle(s.checked); saveCurrentSessionSoon(); }; }
-  if(l){ l.checked = isPlLoop(); l.onchange=function(){ setPlLoop(l.checked); saveCurrentSessionSoon(); }; }
-  if(np){ np.checked = newSongAfterPauseEnabled; np.onchange=function(){ newSongAfterPauseEnabled = np.checked; localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1":"0"); saveCurrentSessionSoon(); }; }
+  if(s){ s.checked = isPlShuffle(); s.onchange=function(){ setPlShuffle(s.checked); saveCurrentSessionSoon(false); }; }
+  if(l){ l.checked = isPlLoop(); l.onchange=function(){ setPlLoop(l.checked); saveCurrentSessionSoon(false); }; }
+  if(np){ np.checked = newSongAfterPauseEnabled; np.onchange=function(){ newSongAfterPauseEnabled=np.checked; localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY,newSongAfterPauseEnabled?"1":"0"); saveCurrentSessionSoon(false); }; }
   try{
     if(player){
       if(typeof player.setShuffle==="function") player.setShuffle(isPlShuffle());
@@ -1186,13 +945,13 @@ function initPlaylistUI(){
 }
 
 
-// Playlist advance on pause
-var NEW_SONG_AFTER_PAUSE_KEY = "YT82_NEW_SONG_AFTER_PAUSE";
-var newSongAfterPauseEnabled = (localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)===null) ? true : localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)==="1";
-
-function initPauseAdvanceUI(){
-  var np = $("plNewSongToggle");
-  if(np){ np.checked = newSongAfterPauseEnabled; np.onchange = function(){ newSongAfterPauseEnabled = np.checked; localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1":"0"); }; }
+function isPlaylistMode(){
+  try{ 
+    if(currentKind==="playlists") return true;
+    if(items && items[currentIndex] && items[currentIndex].isPlaylist) return true;
+    if(isPlaylistLoaded()) return true;
+  }catch(e){}
+  return false;
 }
 
 function advancePlaylistIfNeeded(){
@@ -1334,7 +1093,7 @@ function ensurePlayer(id, start){
       playerVars:{ rel:0, modestbranding:1, playsinline:1 },
       events:{ onStateChange:function(e){
         if(e.data===YT.PlayerState.PLAYING){
-          pauseOverlay.style.display="none"; setPlayUI(true,false);
+          pauseOverlay.style.display="none"; setPlayUI(true,false); updateTrackMeta();
           try{ if(!inPauseSegment){ forceStartPlayBar && forceStartPlayBar(); } }catch(ex){}
           if(!wmShown){ wmShown=true; wm.style.opacity="1"; setTimeout(function(){
       wm.style.opacity="0"; }, 7000); }
@@ -1391,7 +1150,7 @@ function prevIndex(){ if(items.length===0) return -1; if(randomToggle.checked){ 
 
 function loadByIndex(idx, autoStart){
   if(idx<0||idx>=items.length) return; currentIndex=idx;
-  var it=items[idx]; ensurePlayer(it.id, it.start||0); renderList(); setArchetypeForCurrent(); saveCurrentSessionSoon();
+  var it=items[idx]; ensurePlayer(it.id, it.start||0); renderList(); updateTrackMeta(); saveCurrentSessionSoon(false);
   if(autoStart){ startPlayStepper(); }
 }
 function handleEnded(){ var ni=nextIndex(); if(ni<0) return; loadByIndex(ni, !bypassToggle.checked); }
@@ -1456,7 +1215,6 @@ function setPauseFirst(val){ localStorage.setItem(PAUSE_FIRST_KEY, val?"1":"0");
 $("resetLengthsBtn").onclick = function(){
   $("playMin").value = 0; $("playSec").value = 0;
   $("pauseMin").value = 0; $("pauseSec").value = 0;
-  saveCurrentSessionSoon();
 };
 
 // Next: if currently in pause -> jump to play; if in play -> jump to pause.
@@ -1554,6 +1312,14 @@ function initPlayerHalfUI(){
   }
 }
 
+// Prefer header banner for names if present
+function setNameBannerText(txt){
+  var el = $("nameBannerHeader") || $("nameBannerBelow") || $("nameBanner");
+  if(!el) return;
+  el.textContent = txt;
+  el.style.display = "block";
+}
+
 function forceStartPlayBar(){
   try{ stopBar(); }catch(e){}
   try{ startSegCountdown("play", Math.max(1,getPlaySec())); }catch(e){}
@@ -1633,9 +1399,7 @@ document.addEventListener("keydown", function(e){
 
 // ----- init -----
 (function init(){
-  restoreTimeSettings();
   seedPresetsIfEmpty(); renderPresets(getPlaySec(), getPauseSec());
-  saveTimeSettings();
   ensureSeedMusic(); ensureSeedVocal(); loadList("music"); renderList(); refreshTitlesForList();
   
   ytReady.then(function(){
@@ -1668,12 +1432,32 @@ document.addEventListener("keydown", function(e){
     var idx = -1;
     for(var i=0;i<arr.length;i++){ if((arr[i].list||arr[i].id)==="PL2wC40QAchNrvqOCjlieHhrkNDZbsyv_K"){ idx=i; break; } }
     if(idx===-1 && arr.length>0) idx = 0;
-    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); setArchetypeForCurrent(); saveCurrentSessionSoon(false); }
+    if(idx>=0){ currentIndex = idx; ensurePlayer(arr[idx].list||arr[idx].id, arr[idx].start||0); updateTrackMeta(); saveCurrentSessionSoon(false); }
   }catch(e){}
 })();
- initPauseAdvanceUI(); initPlaylistUI();
+ initFamousUI(); initPlaylistUI();
 })();
+document.addEventListener("DOMContentLoaded", function(){
+  try{
+    restoreLastSession();
+    renderRecentSessions();
+    updateTrackMeta();
+    ["pauseFirstToggle","dimToggle","randomToggle","bypassToggle","muteToggle","dipInvertToggle","dipSoftToggle","softIntroToggle"].forEach(function(id){ var el=$(id); if(!el) return; el.addEventListener("change", function(){ saveCurrentSessionSoon(false); }); });
+    ["playBtn","pauseBtn","prevBtn","nextBtn","nextSegmentBtn","plPrevMainBtn","plNextMainBtn","plNextBtn"].forEach(function(id){ var el=$(id); if(!el) return; el.addEventListener("click", function(){ updateTrackMeta(); saveCurrentSessionSoon(false); }); });
+  }catch(e){}
+});
+window.addEventListener("beforeunload", function(){ saveCurrentSession(true); });
 </script>
-<script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();</script>
+<script>(function(){ try{ setInterval(function(){ try{ updatePlaylistControlsVisibility(); }catch(e){} }, 1500); }catch(e){} })();document.addEventListener("DOMContentLoaded", function(){
+  try{
+    restoreLastSession();
+    renderRecentSessions();
+    updateTrackMeta();
+    ["pauseFirstToggle","dimToggle","randomToggle","bypassToggle","muteToggle","dipInvertToggle","dipSoftToggle","softIntroToggle"].forEach(function(id){ var el=$(id); if(!el) return; el.addEventListener("change", function(){ saveCurrentSessionSoon(false); }); });
+    ["playBtn","pauseBtn","prevBtn","nextBtn","nextSegmentBtn","plPrevMainBtn","plNextMainBtn","plNextBtn"].forEach(function(id){ var el=$(id); if(!el) return; el.addEventListener("click", function(){ updateTrackMeta(); saveCurrentSessionSoon(false); }); });
+  }catch(e){}
+});
+window.addEventListener("beforeunload", function(){ saveCurrentSession(true); });
+</script>
 </body>
 </html>
