@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v102</title>
+<title>YT play/pause - v103</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
@@ -112,6 +112,8 @@
   .timeWheelSide{padding:8px;background:#0c0f14;border:1px solid #252b35;border-radius:10px;min-width:0;}
   .timeWheelTitle{text-align:center;font-weight:800;font-size:13px;margin-bottom:6px;}
   .wheelDigits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
+  .wheelColumn{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .wheelStep{height:26px;min-width:0;padding:2px;font-size:17px;font-weight:900;border-radius:7px;background:#181d25;}
   .wheelBox{min-width:0;padding:6px 3px;display:flex;flex-direction:column;gap:2px;background:#20252d;border:1px solid #303744;touch-action:none;cursor:ns-resize;user-select:none;}
   .wheelBox small{font-size:8px;color:#a4acb6;white-space:nowrap;}
   .wheelBox strong{font-size:20px;font-variant-numeric:tabular-nums;}
@@ -173,12 +175,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><h1>YT play/pause - v102</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
+    <div class="titleRow"><h1>YT play/pause - v103</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div id="playerWrap" class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v102</div>
+      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v103</div>
       <div class="speakerControl">
         <button id="speakerBtn" class="speakerBtn" type="button" title="Show volume">🔊</button>
         <div id="volumePanel" class="volumePanel" hidden>
@@ -189,14 +191,13 @@
 
     <div id="trackTitle" class="trackTitle" aria-live="polite">Track title appears here</div>
     <div class="underPlayerControls">
-      <button id="wheelBtn" type="button">Wheel</button>
       <button id="fixedPresetsBtn" type="button">Preset list</button>
       <button id="recentPresetsBtn" type="button">Last 10 presets</button>
       <button id="hideVideoBtn" type="button">Hide video image</button>
       <button id="showPlaylistsBtn" type="button">Show playlists</button>
       <button id="addPlaylistQuickBtn" type="button">Add playlist</button>
     </div>
-    <div id="wheelPanel" class="collapsiblePanel" hidden>
+    <div id="wheelPanel" class="collapsiblePanel">
       <div class="timeWheel" aria-label="Play and pause time wheel">
         <div class="timeWheelControls">
           <button id="wheelResetBtn" class="wheelReset" type="button">Reset 0:00</button>
@@ -205,18 +206,18 @@
           <div class="timeWheelSide">
             <div class="timeWheelTitle">Play</div>
             <div class="wheelDigits">
-              <button class="wheelBox active" type="button" data-wheel-target="play" data-wheel-unit="minutes"><small>Minutes</small><strong id="wheelPlayMinutes">0</strong></button>
-              <button class="wheelBox" type="button" data-wheel-target="play" data-wheel-unit="tens"><small>10 seconds</small><strong id="wheelPlayTens">0</strong></button>
-              <button class="wheelBox" type="button" data-wheel-target="play" data-wheel-unit="ones"><small>Seconds</small><strong id="wheelPlayOnes">0</strong></button>
+              <div class="wheelColumn"><button class="wheelStep" type="button" data-wheel-target="play" data-wheel-unit="minutes" data-wheel-delta="-1">−</button><button class="wheelBox active" type="button" data-wheel-target="play" data-wheel-unit="minutes"><small>Minutes</small><strong id="wheelPlayMinutes">0</strong></button><button class="wheelStep" type="button" data-wheel-target="play" data-wheel-unit="minutes" data-wheel-delta="1">+</button></div>
+              <div class="wheelColumn"><button class="wheelStep" type="button" data-wheel-target="play" data-wheel-unit="tens" data-wheel-delta="-1">−</button><button class="wheelBox" type="button" data-wheel-target="play" data-wheel-unit="tens"><small>10 seconds</small><strong id="wheelPlayTens">0</strong></button><button class="wheelStep" type="button" data-wheel-target="play" data-wheel-unit="tens" data-wheel-delta="1">+</button></div>
+              <div class="wheelColumn"><button class="wheelStep" type="button" data-wheel-target="play" data-wheel-unit="ones" data-wheel-delta="-1">−</button><button class="wheelBox" type="button" data-wheel-target="play" data-wheel-unit="ones"><small>Seconds</small><strong id="wheelPlayOnes">0</strong></button><button class="wheelStep" type="button" data-wheel-target="play" data-wheel-unit="ones" data-wheel-delta="1">+</button></div>
             </div>
             <div id="wheelPlayPreview" class="wheelPreview">0:00</div>
           </div>
           <div class="timeWheelSide">
             <div class="timeWheelTitle">Pause</div>
             <div class="wheelDigits">
-              <button class="wheelBox" type="button" data-wheel-target="pause" data-wheel-unit="minutes"><small>Minutes</small><strong id="wheelPauseMinutes">0</strong></button>
-              <button class="wheelBox" type="button" data-wheel-target="pause" data-wheel-unit="tens"><small>10 seconds</small><strong id="wheelPauseTens">0</strong></button>
-              <button class="wheelBox" type="button" data-wheel-target="pause" data-wheel-unit="ones"><small>Seconds</small><strong id="wheelPauseOnes">0</strong></button>
+              <div class="wheelColumn"><button class="wheelStep" type="button" data-wheel-target="pause" data-wheel-unit="minutes" data-wheel-delta="-1">−</button><button class="wheelBox" type="button" data-wheel-target="pause" data-wheel-unit="minutes"><small>Minutes</small><strong id="wheelPauseMinutes">0</strong></button><button class="wheelStep" type="button" data-wheel-target="pause" data-wheel-unit="minutes" data-wheel-delta="1">+</button></div>
+              <div class="wheelColumn"><button class="wheelStep" type="button" data-wheel-target="pause" data-wheel-unit="tens" data-wheel-delta="-1">−</button><button class="wheelBox" type="button" data-wheel-target="pause" data-wheel-unit="tens"><small>10 seconds</small><strong id="wheelPauseTens">0</strong></button><button class="wheelStep" type="button" data-wheel-target="pause" data-wheel-unit="tens" data-wheel-delta="1">+</button></div>
+              <div class="wheelColumn"><button class="wheelStep" type="button" data-wheel-target="pause" data-wheel-unit="ones" data-wheel-delta="-1">−</button><button class="wheelBox" type="button" data-wheel-target="pause" data-wheel-unit="ones"><small>Seconds</small><strong id="wheelPauseOnes">0</strong></button><button class="wheelStep" type="button" data-wheel-target="pause" data-wheel-unit="ones" data-wheel-delta="1">+</button></div>
             </div>
             <div id="wheelPausePreview" class="wheelPreview">0:00</div>
           </div>
@@ -783,6 +784,12 @@ function initTimeWheel(){
     function endDrag(e){ if(!drag||e.pointerId!==drag.id)return; drag=null; box.classList.remove("dragging"); }
     box.addEventListener("pointerup",endDrag); box.addEventListener("pointercancel",endDrag);
   });
+  Array.prototype.forEach.call(document.querySelectorAll(".wheelStep"),function(btn){
+    btn.onclick=function(){
+      wheelSelection={target:btn.dataset.wheelTarget,unit:btn.dataset.wheelUnit};
+      adjustSelectedWheel(parseInt(btn.dataset.wheelDelta,10)||0);
+    };
+  });
   $("wheelResetBtn").onclick=function(){ setWheelTime("play",0); setWheelTime("pause",0); saveSelectedPreset(0,0); renderPresets(0,0); renderRecentPresets(0,0); syncTimeWheel(); };
   ["playMin","playSec","pauseMin","pauseSec"].forEach(function(id){ $(id).addEventListener("input",syncTimeWheel); });
   syncTimeWheel();
@@ -1089,7 +1096,7 @@ function initPlaylistUI(){
 var FAMOUS_TOGGLE_KEY = "YT82_FAMOUS_ON";
 var NEW_SONG_AFTER_PAUSE_KEY = "YT82_NEW_SONG_AFTER_PAUSE";
 
-var famousEnabled = true; localStorage.setItem(FAMOUS_TOGGLE_KEY,"1");
+var famousEnabled = false; localStorage.setItem(FAMOUS_TOGGLE_KEY,"0");
 var newSongAfterPauseEnabled = (localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)===null) ? true : localStorage.getItem(NEW_SONG_AFTER_PAUSE_KEY)==="1";
 
 var FamousNamesBase = ["Tom Hanks", "Meryl Streep", "Denzel Washington", "Leonardo DiCaprio", "Brad Pitt", "Angelina Jolie", "Robert De Niro", "Al Pacino", "Morgan Freeman", "Natalie Portman", "Scarlett Johansson", "Samuel L. Jackson", "Keanu Reeves", "Jennifer Lawrence", "Viola Davis", "Cate Blanchett", "Nicole Kidman", "Joaquin Phoenix", "Christian Bale", "Margot Robbie", "Zendaya", "Timoth\u00e9e Chalamet", "Robert Downey Jr.", "Gal Gadot", "Jason Momoa", "Henry Cavill", "Tom Holland", "Brie Larson", "Hugh Jackman", "Ryan Reynolds", "Chris Hemsworth", "Chris Evans", "Chris Pratt", "Emma Stone", "Emma Watson", "George Clooney", "Matt Damon", "Ben Affleck", "Julia Roberts", "Sandra Bullock", "Anne Hathaway", "Salma Hayek", "Halle Berry", "Charlize Theron", "Ryan Gosling", "Adam Driver", "Taylor Swift", "Beyonc\u00e9", "Rihanna", "Adele", "Drake", "Kanye West", "Jay-Z", "Billie Eilish", "Ed Sheeran", "Ariana Grande", "The Weeknd", "Lady Gaga", "Bruno Mars", "Justin Bieber", "Selena Gomez", "Katy Perry", "Harry Styles", "Olivia Rodrigo", "Dua Lipa", "Post Malone", "Kendrick Lamar", "Travis Scott", "SZA", "Doja Cat", "Bad Bunny", "Shakira", "J Balvin", "Maluma", "Lizzo", "Miley Cyrus", "Michael Jordan", "LeBron James", "Kobe Bryant", "Shaquille O'Neal", "Stephen Curry", "Lionel Messi", "Cristiano Ronaldo", "Neymar", "Kylian Mbapp\u00e9", "Serena Williams", "Roger Federer", "Rafael Nadal", "Novak Djokovic", "Simone Biles", "Usain Bolt", "Michael Phelps", "Tiger Woods", "Tom Brady", "Peyton Manning", "Mike Tyson", "Conor McGregor", "Ronda Rousey", "Lewis Hamilton", "Max Verstappen", "Naomi Osaka", "Megan Rapinoe", "Albert Einstein", "Isaac Newton", "Nikola Tesla", "Marie Curie", "Charles Darwin", "Galileo Galilei", "Ada Lovelace", "Alan Turing", "Stephen Hawking", "Elon Musk", "Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Jeff Bezos", "Larry Page", "Sergey Brin", "Tim Berners-Lee", "Katherine Johnson", "William Shakespeare", "J.K. Rowling", "Stephen King", "George R.R. Martin", "J.R.R. Tolkien", "Agatha Christie", "Ernest Hemingway", "Jane Austen", "Mark Twain", "Charles Dickens", "Haruki Murakami", "George Orwell", "Maya Angelou", "Toni Morrison", "Neil Gaiman", "Barack Obama", "Michelle Obama", "Joe Biden", "Kamala Harris", "Donald Trump", "Hillary Clinton", "Bernie Sanders", "Angela Merkel", "Emmanuel Macron", "Justin Trudeau", "Vladimir Putin", "Volodymyr Zelenskyy", "Xi Jinping", "Narendra Modi", "Nelson Mandela", "Winston Churchill", "Mahatma Gandhi", "Oprah Winfrey", "Ellen DeGeneres", "Jimmy Fallon", "Jimmy Kimmel", "Trevor Noah", "Stephen Colbert", "Dave Chappelle", "Kevin Hart", "Chris Rock", "John Oliver", "Conan O'Brien", "Harry Potter", "Hermione Granger", "Ron Weasley", "Darth Vader", "Luke Skywalker", "Princess Leia", "Han Solo", "Indiana Jones", "James Bond", "Sherlock Holmes", "Wonder Woman", "Batman", "Superman", "Spider-Man", "Black Panther", "Iron Man", "Captain America", "Thor", "Hulk", "Loki", "Wolverine", "Deadpool", "Katniss Everdeen", "Frodo Baggins", "Gandalf", "Aragorn", "Legolas", "Yoda", "Neo", "Trinity", "Morpheus", "Shah Rukh Khan", "Priyanka Chopra", "Aamir Khan", "Aishwarya Rai", "Deepika Padukone", "Jackie Chan", "Jet Li", "Donnie Yen", "RM (BTS)", "Jin (BTS)", "Suga (BTS)", "J-Hope (BTS)", "Jimin (BTS)", "V (BTS)", "Jungkook (BTS)", "Jisoo (BLACKPINK)", "Jennie (BLACKPINK)", "Ros\u00e9 (BLACKPINK)", "Lisa (BLACKPINK)", "PewDiePie", "MrBeast", "Ninja", "Pokimane", "Markiplier", "Jacksepticeye", "DanTDM", "Valkyrae", "Hayao Miyazaki", "Akira Toriyama", "Hideo Kojima", "Shigeru Miyamoto", "Satoru Iwata", "Reggie Fils-Aim\u00e9", "Greta Thunberg", "Malala Yousafzai", "Bono", "Sting", "Phil Collins", "Paul McCartney", "Ringo Starr", "Mick Jagger", "Keith Richards", "David Bowie", "Freddie Mercury", "Elton John", "Whitney Houston", "Prince", "Aretha Franklin", "Nirvana (Kurt Cobain)", "Dave Grohl", "Eminem", "Snoop Dogg", "Ice Cube", "Dr. Dre", "50 Cent", "Lil Wayne"];
@@ -1105,7 +1112,7 @@ function initFamousUI(){
   if(ft){ ft.checked = famousEnabled; ft.onchange = function(){ famousEnabled = ft.checked; localStorage.setItem(FAMOUS_TOGGLE_KEY, famousEnabled ? "1":"0"); var el=$("nameBanner"); if(el) el.style.display = famousEnabled? "block":"none"; }; }
   var np = $("plNewSongToggle");
   if(np){ np.checked = newSongAfterPauseEnabled; np.onchange = function(){ newSongAfterPauseEnabled = np.checked; localStorage.setItem(NEW_SONG_AFTER_PAUSE_KEY, newSongAfterPauseEnabled ? "1":"0"); }; }
-  var nb = $("nameBanner"); if(nb) nb.style.display = "block";
+  var nb = $("nameBanner"); if(nb) nb.style.display = famousEnabled ? "block" : "none";
 }
 
 function isPlaylistMode(){
@@ -1265,7 +1272,7 @@ function updateTrackTitle(){
 }
 function toggleChoicePanel(showId){
   var show=$(showId); if(!show)return; var opening=show.hidden;
-  ["wheelPanel","fixedPresetsPanel","recentPresetsPanel"].forEach(function(id){ var el=$(id); if(el)el.hidden=true; });
+  ["fixedPresetsPanel","recentPresetsPanel"].forEach(function(id){ var el=$(id); if(el)el.hidden=true; });
   if(opening)show.hidden=false;
 }
 function initCompactControls(){
@@ -1273,7 +1280,6 @@ function initCompactControls(){
   if(speaker) speaker.onclick=function(){ panel.hidden=!panel.hidden; };
   if(slider){ slider.value=savedVolume(); slider.oninput=function(){ var v=parseInt(slider.value,10)||0; localStorage.setItem(VOLUME_KEY,String(v)); baseVolume=v; updateSpeakerIcon(v); try{ if(player){ if(v<=0){player.mute&&player.mute();}else{player.unMute&&player.unMute();player.setVolume&&player.setVolume(v);} } }catch(e){} }; }
   applySavedVolume();
-  $("wheelBtn").onclick=function(){ syncTimeWheel(); toggleChoicePanel("wheelPanel"); };
   $("fixedPresetsBtn").onclick=function(){ toggleChoicePanel("fixedPresetsPanel"); };
   $("recentPresetsBtn").onclick=function(){ renderRecentPresets(getPlaySec(),getPauseSec()); toggleChoicePanel("recentPresetsPanel"); };
   $("showPlaylistsBtn").onclick=function(){ showPlaylistManager(false); };
