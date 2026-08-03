@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v105</title>
+<title>YT play/pause - v106</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
@@ -108,14 +108,17 @@
   .timeWheelControls{display:flex;justify-content:center;gap:7px;margin-bottom:8px;}
   .timeWheelControls button{min-width:48px;font-size:18px;font-weight:800;}
   .timeWheelControls .wheelReset{font-size:11px;font-weight:600;}
-  .timeWheelGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .timeWheelSide{padding:8px;background:#0c0f14;border:1px solid #252b35;border-radius:10px;min-width:0;}
+  .timeWheelGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .timeWheelSide{padding:8px 5px;background:#0c0f14;border:1px solid #252b35;border-radius:10px;min-width:0;}
   .timeWheelTitle{text-align:center;font-weight:800;font-size:13px;margin-bottom:6px;}
-  .wheelDigits{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr) minmax(0,1fr);gap:5px;}
-  .wheelColon{display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#cbd5e1;}
+  .wheelDigits{display:grid;grid-template-columns:minmax(0,1fr) 6px minmax(0,1fr) minmax(0,1fr);gap:2px;}
+  .wheelColon{display:flex;align-items:center;justify-content:center;width:6px;font-size:25px;font-weight:900;color:#cbd5e1;}
   .wheelColumn{display:flex;flex-direction:column;gap:3px;min-width:0;}
   .wheelStep{height:52px;min-width:0;padding:3px;font-size:27px;font-weight:900;border-radius:9px;background:#181d25;}
   .wheelBox{height:52px;min-width:0;padding:5px 3px;display:flex;flex-direction:column;gap:2px;background:#20252d;border:1px solid #303744;touch-action:none;cursor:ns-resize;user-select:none;}
+  .wheelBox{order:1;}
+  .wheelStep[data-wheel-delta="1"]{order:2;}
+  .wheelStep[data-wheel-delta="-1"]{order:3;}
   .wheelBox small{font-size:8px;color:#a4acb6;white-space:nowrap;}
   .wheelBox strong{font-size:20px;font-variant-numeric:tabular-nums;}
   .wheelBox.active{outline:2px solid #3e82ff;background:#15213a;}
@@ -123,6 +126,8 @@
   .wheelPreview{text-align:center;margin-top:5px;font-size:14px;font-weight:800;color:#dbeafe;font-variant-numeric:tabular-nums;}
   .playWheel .wheelBox strong,.playWheel .wheelPreview{color:#00d230;}
   .pauseWheel .wheelBox strong,.pauseWheel .wheelPreview{color:#ff5252;}
+  .wheelResetPlay{background:#087f37;color:#fff;}
+  .wheelResetPause{background:#b4232f;color:#fff;}
   #wheelBody[hidden]{display:none;}
   .pauseOverlay{position:absolute;inset:0;border-radius:12px;background:rgba(0,0,0,0.75);pointer-events:none;display:none;}
   .wm{position:absolute;left:50%;transform:translateX(-50%);top:20%;background:rgba(0,0,0,0.45);color:#e5e7eb;font-size:12px;padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);pointer-events:none;opacity:0;transition:opacity .25s ease;}
@@ -179,12 +184,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><h1>YT play/pause - v105</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
+    <div class="titleRow"><h1>YT play/pause - v106</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div id="playerWrap" class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v105</div>
+      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v106</div>
       <div class="speakerControl">
         <button id="speakerBtn" class="speakerBtn" type="button" title="Show volume">🔊</button>
         <div id="volumePanel" class="volumePanel" hidden>
@@ -204,7 +209,8 @@
     <div id="wheelPanel" class="collapsiblePanel">
       <div class="timeWheel" aria-label="Play and pause time wheel">
         <div class="timeWheelControls">
-          <button id="wheelResetBtn" class="wheelReset" type="button">Reset 0:00</button>
+          <button id="wheelResetPlayBtn" class="wheelReset wheelResetPlay" type="button">Reset Play</button>
+          <button id="wheelResetPauseBtn" class="wheelReset wheelResetPause" type="button">Reset Stop</button>
           <button id="wheelVisibilityBtn" class="wheelReset" type="button">Hide</button>
         </div>
         <div id="wheelBody">
@@ -804,7 +810,12 @@ function initTimeWheel(){
       adjustSelectedWheel(parseInt(btn.dataset.wheelDelta,10)||0);
     };
   });
-  $("wheelResetBtn").onclick=function(){ setWheelTime("play",0); setWheelTime("pause",0); saveSelectedPreset(0,0); renderPresets(0,0); renderRecentPresets(0,0); syncTimeWheel(); };
+  $("wheelResetPlayBtn").onclick=function(){
+    setWheelTime("play",0); saveSelectedPreset(0,getPauseSec()); renderPresets(0,getPauseSec()); renderRecentPresets(0,getPauseSec()); syncTimeWheel();
+  };
+  $("wheelResetPauseBtn").onclick=function(){
+    setWheelTime("pause",0); saveSelectedPreset(getPlaySec(),0); renderPresets(getPlaySec(),0); renderRecentPresets(getPlaySec(),0); syncTimeWheel();
+  };
   var wheelBody=$("wheelBody"), visibilityBtn=$("wheelVisibilityBtn"), wheelHidden=localStorage.getItem(WHEEL_HIDDEN_KEY)==="1";
   function applyWheelVisibility(){ wheelBody.hidden=wheelHidden; visibilityBtn.textContent=wheelHidden?"Show":"Hide"; }
   visibilityBtn.onclick=function(){ wheelHidden=!wheelHidden; localStorage.setItem(WHEEL_HIDDEN_KEY,wheelHidden?"1":"0"); applyWheelVisibility(); };
