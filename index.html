@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v103</title>
+<title>YT play/pause - v104</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
@@ -113,8 +113,8 @@
   .timeWheelTitle{text-align:center;font-weight:800;font-size:13px;margin-bottom:6px;}
   .wheelDigits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
   .wheelColumn{display:flex;flex-direction:column;gap:3px;min-width:0;}
-  .wheelStep{height:26px;min-width:0;padding:2px;font-size:17px;font-weight:900;border-radius:7px;background:#181d25;}
-  .wheelBox{min-width:0;padding:6px 3px;display:flex;flex-direction:column;gap:2px;background:#20252d;border:1px solid #303744;touch-action:none;cursor:ns-resize;user-select:none;}
+  .wheelStep{height:52px;min-width:0;padding:3px;font-size:27px;font-weight:900;border-radius:9px;background:#181d25;}
+  .wheelBox{height:52px;min-width:0;padding:5px 3px;display:flex;flex-direction:column;gap:2px;background:#20252d;border:1px solid #303744;touch-action:none;cursor:ns-resize;user-select:none;}
   .wheelBox small{font-size:8px;color:#a4acb6;white-space:nowrap;}
   .wheelBox strong{font-size:20px;font-variant-numeric:tabular-nums;}
   .wheelBox.active{outline:2px solid #3e82ff;background:#15213a;}
@@ -175,12 +175,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><h1>YT play/pause - v103</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
+    <div class="titleRow"><h1>YT play/pause - v104</h1><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div id="playerWrap" class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v103</div>
+      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v104</div>
       <div class="speakerControl">
         <button id="speakerBtn" class="speakerBtn" type="button" title="Show volume">🔊</button>
         <div id="volumePanel" class="volumePanel" hidden>
@@ -529,6 +529,10 @@ async function fetchTitleForId(id, isPlaylist){
 function clampInt(v, minVal){ var n = parseInt(v,10); if(isNaN(n)) n = 0; if(typeof minVal === "number" && n < minVal) n = minVal; return n; }
 function clampFloat(v, minVal){ var n = parseFloat(v); if(isNaN(n)) n = 0; if(typeof minVal === "number" && n < minVal) n = minVal; return n; }
 function fmtSec(t){ t = Math.max(0, Math.floor(t||0)); var m = Math.floor(t/60); var s = t % 60; return m + ":" + (s<10?"0":"") + s; }
+function returnToTop(){
+  try{ window.scrollTo({top:0,behavior:"smooth"}); }
+  catch(e){ document.documentElement.scrollTop=0; document.body.scrollTop=0; }
+}
 
 // ----- tabs (URL lists always visible) -----
 var tabPlayer=$("tabPlayer"), tabUrls=$("tabUrls"), tabPlaylist=$("tabPlaylist");
@@ -639,7 +643,7 @@ function renderList(){
     if(idx===currentIndex) row.style.boxShadow="0 0 0 2px rgba(62,130,255,0.6) inset";
 
     var playBtn=document.createElement("button"); playBtn.className="btn-icon"; playBtn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l10-7z"/></svg>'; playBtn.title="Play this";
-    playBtn.onclick=function(){ loadByIndex(idx,true); setTab(currentKind==="playlists"?"playlist":"player"); };
+    playBtn.onclick=function(){ if(currentKind==="playlists")returnToTop(); loadByIndex(idx,true); setTab(currentKind==="playlists"?"playlist":"player"); };
     var topBtn=document.createElement("button"); topBtn.className="btn-icon"; topBtn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 4l-7 7h4v7h6v-7h4z"/></svg>'; topBtn.title="Move to top";
     topBtn.onclick=function(){ moveToTop(idx); };
     var idxBox=document.createElement("div"); idxBox.className="idx"; idxBox.textContent=""+(idx+1);
@@ -1287,7 +1291,7 @@ function initCompactControls(){
   var hidden=localStorage.getItem(VIDEO_HIDDEN_KEY)!=="0", wrap=$("playerWrap"), hideBtn=$("hideVideoBtn");
   function applyHidden(){ wrap.classList.toggle("videoHidden",hidden); hideBtn.textContent=hidden?"Show video image":"Hide video image"; }
   hideBtn.onclick=function(){ hidden=!hidden; localStorage.setItem(VIDEO_HIDDEN_KEY,hidden?"1":"0"); applyHidden(); };
-  var returnTop=$("returnTopBtn"); if(returnTop) returnTop.onclick=function(){ window.scrollTo({top:0,behavior:"smooth"}); };
+  var returnTop=$("returnTopBtn"); if(returnTop) returnTop.onclick=returnToTop;
   applyHidden();
 }
 
