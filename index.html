@@ -86,18 +86,25 @@
   .btn-main.paused{background:#444b55;}
   .playerWrap{position:relative;transition:height .2s ease;}
   iframe{width:100%;aspect-ratio:16/9;border-radius:12px;border:0;background:#000;}
-  .playerWrap.videoHidden{height:0;min-height:0;overflow:hidden;}
-  .playerWrap.videoHidden iframe,.playerWrap.videoHidden .pauseOverlay,.playerWrap.videoHidden .wm,.playerWrap.videoHidden .speakerControl{display:none!important;}
+  .playerWrap.videoHidden{height:52px;min-height:52px;overflow:visible;background:#0f1115;border:1px solid #252b35;border-radius:10px;}
+  .playerWrap.videoHidden iframe,.playerWrap.videoHidden .pauseOverlay,.playerWrap.videoHidden .wm{display:none!important;}
+  .playerWrap.videoHidden .speakerControl{top:5px;}
+  .playerWrap.videoHidden .speakerBtn{width:34px;height:34px;font-size:17px;}
+  .playerWrap.videoHidden .volumePanel{height:14vh;min-height:90px;max-height:150px;padding:5px;}
   .trackTitle{margin-top:7px;min-height:32px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:14px;color:#f8fafc;background:#101319;border:1px solid #252b35;border-radius:10px;padding:6px 10px;}
   .underPlayerControls{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;}
   .underPlayerControls button{font-size:12px;padding:6px 9px;min-height:32px;}
   .collapsiblePanel{margin-top:7px;padding:8px;border:1px solid #282e38;border-radius:10px;background:#101319;}
   .collapsiblePanel[hidden]{display:none;}
-  .speakerControl{position:absolute;left:15%;top:10px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .speakerControl{position:absolute;left:12%;top:10px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:5px;}
   .speakerBtn{width:40px;height:40px;border-radius:50%;padding:0;background:rgba(11,11,12,.82);border:1px solid rgba(255,255,255,.25);font-size:21px;box-shadow:0 3px 12px rgba(0,0,0,.35);}
   .volumePanel{height:22vh;min-height:120px;max-height:210px;padding:8px 7px;border-radius:12px;background:rgba(11,11,12,.9);border:1px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;}
   .volumePanel[hidden]{display:none;}
-  .volumeSlider{writing-mode:vertical-lr;direction:rtl;width:24px;height:100%;accent-color:#3e82ff;}
+  .volumeSlider{writing-mode:vertical-lr;direction:rtl;width:48px;height:100%;accent-color:#3e82ff;}
+  .playlistBlock{display:flex;flex-direction:column;gap:5px;align-items:stretch;}
+  .playlistNav{display:flex;gap:6px;flex-wrap:nowrap;}
+  .playlistNav .btn-main{min-width:0;width:auto;height:36px;padding:6px 10px;font-size:12px;white-space:nowrap;}
+  .dipSettingsCompact{height:32px;padding:5px 9px;font-size:11px;align-self:flex-end;}
   .pauseOverlay{position:absolute;inset:0;border-radius:12px;background:rgba(0,0,0,0.75);pointer-events:none;display:none;}
   .wm{position:absolute;left:50%;transform:translateX(-50%);top:20%;background:rgba(0,0,0,0.45);color:#e5e7eb;font-size:12px;padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);pointer-events:none;opacity:0;transition:opacity .25s ease;}
   label{font-size:12px;color:var(--muted);display:block;margin-bottom:2px;}
@@ -212,9 +219,7 @@
           <span class="slider"></span>
         </label>
       </div>
-      <button id="dipSettingsBtn" class="btn-icon" title="Adjust dip settings">Dip settings</button>
       <span id="bigCountdown" class="bigCounter mode-play">00:00</span>
-      <button id="playerSizeBtn" class="btn-toggle" title="Toggle half-height player">Player size</button>
     </div>
 
     <!-- Row 2: transport -->
@@ -225,15 +230,17 @@
       <button id="nextBtn" class="btn-icon" title="Next">&#9654;</button>
     </div>
 
-    <!-- Row 3: big Reset + Next (segment) -->
+    <!-- Row 3: segment + playlist navigation -->
     <div class="row" style="margin-top:6px;">
-      <button id="resetLengthsBtn" class="btn-main" title="Reset play &amp; pause to 0:00">Reset</button>
       <button id="nextSegmentBtn" class="btn-main" title="Jump to next segment">Next segment</button>
-    
-      
-      <button id="plPrevMainBtn" class="btn-main" style="min-width:180px" title="Play previous track in current playlist">Prev in playlist</button>
-<button id="plNextMainBtn" class="btn-main" style="min-width:200px" title="Play next track in current playlist">Next in playlist</button>
-</div>
+      <div class="playlistBlock">
+        <div class="playlistNav">
+          <button id="plPrevMainBtn" class="btn-main" title="Play previous track in current playlist">Prev in playlist</button>
+          <button id="plNextMainBtn" class="btn-main" title="Play next track in current playlist">Next in playlist</button>
+        </div>
+        <button id="dipSettingsBtn" class="dipSettingsCompact" title="Adjust dip settings">Dip settings</button>
+      </div>
+    </div>
 
     <div class="row">
       <span id="playCountdown" class="badge" style="display:none;">Play: 0:00</span>
@@ -318,6 +325,9 @@
       Top to move first, and âœ• to delete.
     </div>
 
+    <div class="row" style="justify-content:flex-end;margin-top:8px;">
+      <button id="returnTopBtn" type="button">Return to top</button>
+    </div>
     <div id="urlList" class="list"></div>
   </div>
 
@@ -654,6 +664,7 @@ function setFromSeconds(minEl,secEl,total){ total=Math.max(0,Math.floor(total||0
 var PRESETS_KEY="YT99_SELECTED_PRESET";
 var RECENT_PRESETS_KEY="YT99_RECENT_PRESETS";
 var FIXED_PRESETS=[
+  {play:15,pause:3}, {play:15,pause:5}, {play:15,pause:10}, {play:30,pause:10},
   {play:5,pause:30}, {play:15,pause:40}, {play:15,pause:120},
   {play:20,pause:120}, {play:30,pause:120}, {play:30,pause:180}
 ];
@@ -1179,9 +1190,10 @@ function initCompactControls(){
   $("recentPresetsBtn").onclick=function(){ renderRecentPresets(getPlaySec(),getPauseSec()); togglePresetPanel("recentPresetsPanel","fixedPresetsPanel"); };
   $("showPlaylistsBtn").onclick=function(){ showPlaylistManager(false); };
   $("addPlaylistQuickBtn").onclick=function(){ showPlaylistManager(true); };
-  var hidden=localStorage.getItem(VIDEO_HIDDEN_KEY)==="1", wrap=$("playerWrap"), hideBtn=$("hideVideoBtn");
+  var hidden=localStorage.getItem(VIDEO_HIDDEN_KEY)!=="0", wrap=$("playerWrap"), hideBtn=$("hideVideoBtn");
   function applyHidden(){ wrap.classList.toggle("videoHidden",hidden); hideBtn.textContent=hidden?"Show video image":"Hide video image"; }
   hideBtn.onclick=function(){ hidden=!hidden; localStorage.setItem(VIDEO_HIDDEN_KEY,hidden?"1":"0"); applyHidden(); };
+  var returnTop=$("returnTopBtn"); if(returnTop) returnTop.onclick=function(){ window.scrollTo({top:0,behavior:"smooth"}); };
   applyHidden();
 }
 
@@ -1311,7 +1323,8 @@ function setPauseFirst(val){ localStorage.setItem(PAUSE_FIRST_KEY, val?"1":"0");
 
 
 // Reset play/pause lengths to 0:00
-$("resetLengthsBtn").onclick = function(){
+var resetLengthsBtn=$("resetLengthsBtn");
+if(resetLengthsBtn) resetLengthsBtn.onclick = function(){
   $("playMin").value = 0; $("playSec").value = 0;
   $("pauseMin").value = 0; $("pauseSec").value = 0;
 };
