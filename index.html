@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v107</title>
+<title>YT play/pause - v109</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
@@ -150,6 +150,9 @@
   .dipWheelStep[data-dip-delta="1"]{order:2;}
   .dipWheelStep[data-dip-delta="-1"]{order:3;}
   .dipWheelDot{width:7px;height:52px;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:900;}
+  .dipSummaryScreen{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 0 8px;padding:7px 9px;border:1px solid #303744;border-radius:9px;background:#080b10;font-size:13px;font-weight:900;font-variant-numeric:tabular-nums;}
+  .dipSummaryValue{color:#20df58;}
+  .gapSummaryValue{color:#ff5a66;}
   .pauseOverlay{position:absolute;inset:0;border-radius:12px;background:rgba(0,0,0,0.75);pointer-events:none;display:none;}
   .wm{position:absolute;left:50%;transform:translateX(-50%);top:20%;background:rgba(0,0,0,0.45);color:#e5e7eb;font-size:12px;padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);pointer-events:none;opacity:0;transition:opacity .25s ease;}
   label{font-size:12px;color:var(--muted);display:block;margin-bottom:2px;}
@@ -205,12 +208,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><div class="titleMain"><h1>YT play/pause - v107</h1><button id="verticalLockBtn" class="verticalLockBtn active" type="button" aria-pressed="true" title="Keep the screen in portrait view">🔒 Vertical</button></div><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
+    <div class="titleRow"><div class="titleMain"><h1>YT play/pause - v109</h1><button id="verticalLockBtn" class="verticalLockBtn active" type="button" aria-pressed="true" title="Keep the screen in portrait view">🔒 Vertical</button></div><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div id="playerWrap" class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v107</div>
+      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v109</div>
       <div class="speakerControl">
         <button id="speakerBtn" class="speakerBtn" type="button" title="Show volume">🔊</button>
         <div id="volumePanel" class="volumePanel" hidden>
@@ -453,6 +456,7 @@
 
   <div id="dipSettingsCard" class="card" style="margin-top:8px;">
     <h2>Audio dip settings</h2>
+    <div class="dipSummaryScreen" aria-live="polite"><span id="dipTotalDisplay" class="dipSummaryValue">DIP 1.000–4.000 s</span><span id="dipGapTotalDisplay" class="gapSummaryValue">GAP 10–50 s</span></div>
     <div class="dipWheelRow">
       <div class="dipWheelGroup length">
         <div class="dipWheelLabel">DIP FROM</div>
@@ -471,16 +475,23 @@
         </div>
       </div>
       <div class="dipWheelGroup gap">
-        <div class="dipWheelLabel">DIP GAP</div>
+        <div class="dipWheelLabel">GAP FROM</div>
         <div class="dipWheelPair">
-          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gap" data-dip-unit="tens"><small>10 seconds</small><strong id="dipGapTens">1</strong></div><button class="dipWheelStep" type="button" data-dip-field="gap" data-dip-unit="tens" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gap" data-dip-unit="tens" data-dip-delta="-1">−</button></div>
-          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gap" data-dip-unit="ones"><small>Seconds</small><strong id="dipGapOnes">0</strong></div><button class="dipWheelStep" type="button" data-dip-field="gap" data-dip-unit="ones" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gap" data-dip-unit="ones" data-dip-delta="-1">−</button></div>
+          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapFrom" data-dip-unit="tens"><small>10 seconds</small><strong id="dipGapFromTens">1</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="tens" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="tens" data-dip-delta="-1">−</button></div>
+          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapFrom" data-dip-unit="ones"><small>Seconds</small><strong id="dipGapFromOnes">0</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="ones" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="ones" data-dip-delta="-1">−</button></div>
+        </div>
+      </div>
+      <div class="dipWheelGroup gap">
+        <div class="dipWheelLabel">GAP TO</div>
+        <div class="dipWheelPair">
+          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapTo" data-dip-unit="tens"><small>10 seconds</small><strong id="dipGapToTens">5</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="tens" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="tens" data-dip-delta="-1">−</button></div>
+          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapTo" data-dip-unit="ones"><small>Seconds</small><strong id="dipGapToOnes">0</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="ones" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="ones" data-dip-delta="-1">−</button></div>
         </div>
       </div>
       <input id="dipLenMin" type="hidden" value="1.0">
       <input id="dipLenMax" type="hidden" value="4.0">
       <input id="dipGapMin" type="hidden" value="10">
-      <input id="dipGapMax" type="hidden" value="10">
+      <input id="dipGapMax" type="hidden" value="50">
     </div>
     <div class="row">
       <div>
@@ -513,7 +524,7 @@
         <input id="dipFadeMs" type="number" min="0" max="10000" value="800">
       </div>
     </div>
-    <div class="banner tiny">Dip length is randomly selected from <b>DIP FROM</b> to <b>DIP TO</b>. <b>DIP GAP</b> sets the time between dips. After every dip, volume returns to its exact pre-dip level. With <b>Invert</b>, the dip window plays at the speaker-slider volume, then returns to the reduced level.</div>
+    <div class="banner tiny">Dip length is randomly selected from <b>DIP FROM</b> to <b>DIP TO</b>. The wait is randomly selected from <b>GAP FROM</b> to <b>GAP TO</b>. After every dip, volume returns to its exact pre-dip level. With <b>Invert</b>, the dip window plays at the speaker-slider volume, then always fades down using <b>Fade ms</b>.</div>
   </div>
 </div>
 
@@ -933,6 +944,7 @@ var dipFadeTimer = null;
 var dipping = false;
 var baseVolume = 100;
 var dipReturnVolume = 100;
+var activeDipWasInverted = false;
 var introFadeTimer = null;
 
 function readDipNumber(id, dflt){
@@ -958,17 +970,24 @@ function splitDipLength(value){
 }
 function syncDipWheelDisplay(){
   var from=splitDipLength(readDipNumber("dipLenMin",1)), to=splitDipLength(readDipNumber("dipLenMax",4));
-  var gap=Math.max(0,Math.min(99,Math.round(readDipNumber("dipGapMin",10))));
+  var gapFrom=Math.max(0,Math.min(99,Math.round(readDipNumber("dipGapMin",10))));
+  var gapTo=Math.max(0,Math.min(99,Math.round(readDipNumber("dipGapMax",50))));
   $("dipFromSec").textContent=from.seconds; $("dipFromMillis").textContent=padMillis(from.millis);
   $("dipToSec").textContent=to.seconds; $("dipToMillis").textContent=padMillis(to.millis);
-  $("dipGapTens").textContent=Math.floor(gap/10); $("dipGapOnes").textContent=gap%10;
+  $("dipGapFromTens").textContent=Math.floor(gapFrom/10); $("dipGapFromOnes").textContent=gapFrom%10;
+  $("dipGapToTens").textContent=Math.floor(gapTo/10); $("dipGapToOnes").textContent=gapTo%10;
+  $("dipTotalDisplay").textContent="DIP "+from.seconds+"."+padMillis(from.millis)+"–"+to.seconds+"."+padMillis(to.millis)+" s";
+  $("dipGapTotalDisplay").textContent="GAP "+gapFrom+"–"+gapTo+" s";
 }
 function adjustDipWheel(field,unit,delta){
   delta=delta<0?-1:1;
-  if(field==="gap"){
-    var gap=Math.max(0,Math.min(99,Math.round(readDipNumber("dipGapMin",10))));
+  if(field==="gapFrom" || field==="gapTo"){
+    var id=field==="gapFrom"?"dipGapMin":"dipGapMax";
+    var gap=Math.max(0,Math.min(99,Math.round(readDipNumber(id,field==="gapFrom"?10:50))));
     gap=(gap+(unit==="tens"?delta*10:delta)+100)%100;
-    $("dipGapMin").value=gap; $("dipGapMax").value=gap;
+    $(id).value=gap;
+    var gapFrom=readDipNumber("dipGapMin",10), gapTo=readDipNumber("dipGapMax",50);
+    if(gapFrom>gapTo){ if(field==="gapFrom") $("dipGapMax").value=gapFrom; else $("dipGapMin").value=gapTo; }
   }else{
     var id=field==="from"?"dipLenMin":"dipLenMax", parts=splitDipLength(readDipNumber(id,field==="from"?1:4));
     var total=parts.total+(unit==="seconds"?delta*1000:delta*100);
@@ -996,7 +1015,7 @@ function initDipWheels(){
 function applyDipSettingsToInputs(){
   function get(k, d){ var v = localStorage.getItem(k); return v===null? d : parseFloat(v); }
   var v1 = get(DIP_LEN_MIN_KEY, 1), v2 = get(DIP_LEN_MAX_KEY, 4);
-  var g1 = get(DIP_GAP_MIN_KEY, 10), g2 = g1;
+  var g1 = get(DIP_GAP_MIN_KEY, 10), g2 = get(DIP_GAP_MAX_KEY, 50);
   var vp = get(DIP_VOL_KEY, 10);
   var tgl = (localStorage.getItem(DIP_TOGGLE_KEY)==="1");
   var inv = (localStorage.getItem(DIP_INVERT_KEY)==="1");
@@ -1049,10 +1068,18 @@ function getCurrentPlayerVolume(){
   try{ if(player && typeof player.getVolume === "function") return Math.max(0, Math.min(100, player.getVolume())); }catch(e){}
   return (typeof baseVolume === "number" ? baseVolume : 100);
 }
-function setPlayerVolumeSmooth(targetVol){
+function setPlayerVolumeImmediate(targetVol){
+  if(!player || typeof player.setVolume !== "function") return;
+  targetVol=Math.max(0,Math.min(100,Math.round(targetVol))); clearDipFade();
+  try{
+    if(targetVol===0){ player.setVolume(0); if(player.mute)player.mute(); }
+    else{ if(player.unMute)player.unMute(); player.setVolume(targetVol); }
+  }catch(e){}
+}
+function setPlayerVolumeSmooth(targetVol,forceFade){
   if(!player || typeof player.setVolume !== "function") return;
   targetVol = Math.max(0, Math.min(100, Math.round(targetVol)));
-  var soft = readDipFlag("dipSoftToggle", DIP_SOFT_KEY);
+  var soft = !!forceFade || readDipFlag("dipSoftToggle", DIP_SOFT_KEY);
   var fadeMs = Math.max(0, readDipNumber("dipFadeMs",800));
   clearDipFade();
   try{ player.unMute && player.unMute(); }catch(e){}
@@ -1120,10 +1147,11 @@ function beginDip(){
   if(!player || typeof player.setVolume !== "function") { scheduleNextDip(); return; }
   var len = getDipLengthMs();
   var invert = readDipFlag("dipInvertToggle", DIP_INVERT_KEY);
+  activeDipWasInverted = invert;
   dipReturnVolume = getCurrentPlayerVolume();
 
   if(invert){
-    setPlayerVolumeSmooth(baseVolume);
+    setPlayerVolumeImmediate(baseVolume);
   }else{
     setPlayerVolumeSmooth(getDipTargetVolume());
   }
@@ -1132,7 +1160,7 @@ function beginDip(){
   dipTimerLen = setTimeout(endDip, len);
 }
 function endDip(){
-  setPlayerVolumeSmooth(dipReturnVolume);
+  setPlayerVolumeSmooth(dipReturnVolume,activeDipWasInverted);
   dipping = false;
   scheduleNextDip();
 }
