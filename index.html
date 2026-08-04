@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v110</title>
+<title>YT play/pause - v111</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
@@ -86,8 +86,12 @@
   button:hover{background:var(--btn-hover);}
   .btn-icon{width:48px;height:40px;padding:0;}
   .btn-main{min-width:90px;height:40px;}
-  .btn-main.playing{background:var(--accent);}
-  .btn-main.paused{background:#444b55;}
+  .btn-main.playing{background:#16a34a;color:#fff;box-shadow:0 0 0 1px #41d46f inset,0 0 12px rgba(22,163,74,.38);}
+  .btn-main.paused{background:#f5c518;color:#171200;box-shadow:0 0 0 1px #ffe36a inset,0 0 12px rgba(245,197,24,.35);}
+  @keyframes softGreenMove{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+  #playBtn.waiting{background:linear-gradient(110deg,#0f4f2b,#18753d,#0f4f2b);background-size:220% 100%;animation:softGreenMove 2.4s ease-in-out infinite;color:#d7ffe3;}
+  #plNextMainBtn,#plNextBtn{background:#f5c518;color:#171200;font-weight:800;}
+  #plNextMainBtn:hover,#plNextBtn:hover{background:#ffe05a;}
   .playerWrap{position:relative;transition:height .2s ease;}
   iframe{width:100%;aspect-ratio:16/9;border-radius:12px;border:0;background:#000;}
   .playerWrap.videoHidden{height:52px;min-height:52px;overflow:visible;background:#0f1115;border:1px solid #252b35;border-radius:10px;}
@@ -144,8 +148,8 @@
   .dipWheelColumn{display:flex;flex-direction:column;gap:3px;width:52px;}
   .dipWheelBox,.dipWheelStep{width:52px;height:52px;min-width:52px;padding:3px;border-radius:9px;}
   .dipWheelBox{order:1;display:flex;flex-direction:column;background:#20252d;border:1px solid #303744;cursor:ns-resize;touch-action:none;user-select:none;}
-  .dipWheelBox small{font-size:8px;color:#a4acb6;white-space:nowrap;}
-  .dipWheelBox strong{font-size:20px;font-variant-numeric:tabular-nums;}
+  .dipWheelBox small{display:none;}
+  .dipWheelBox strong{font-size:22px;font-variant-numeric:tabular-nums;margin:auto;}
   .dipWheelStep{font-size:27px;font-weight:900;background:#181d25;}
   .dipWheelStep[data-dip-delta="1"]{order:2;}
   .dipWheelStep[data-dip-delta="-1"]{order:3;}
@@ -229,12 +233,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><div class="titleMain"><h1>YT play/pause - v110</h1><button id="verticalLockBtn" class="verticalLockBtn active" type="button" aria-pressed="true" title="Keep the screen in portrait view">🔒 Vertical</button></div><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
+    <div class="titleRow"><div class="titleMain"><h1>YT play/pause - v111</h1><button id="verticalLockBtn" class="verticalLockBtn active" type="button" aria-pressed="true" title="Keep the screen in portrait view">🔒 Vertical</button></div><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div id="playerWrap" class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v110</div>
+      <div id="wm" class="wm">Jimmy James &middot; 04.08.2026 &middot; v111</div>
       <div class="speakerControl">
         <button id="speakerBtn" class="speakerBtn" type="button" title="Show volume">🔊</button>
         <div id="volumePanel" class="volumePanel" hidden>
@@ -254,8 +258,8 @@
     <div id="wheelPanel" class="collapsiblePanel">
       <div class="timeWheel" aria-label="Play and pause time wheel">
         <div class="timeWheelControls">
-          <button id="wheelResetPlayBtn" class="wheelReset wheelResetPlay" type="button">Reset Play</button>
-          <button id="wheelResetPauseBtn" class="wheelReset wheelResetPause" type="button">Reset Stop</button>
+          <button id="wheelResetPlayBtn" class="wheelReset wheelResetPlay" type="button">PLAY 0:15 · RESET</button>
+          <button id="wheelResetPauseBtn" class="wheelReset wheelResetPause" type="button">STOP 0:40 · RESET</button>
           <button id="wheelVisibilityBtn" class="wheelReset" type="button">Hide</button>
         </div>
         <div id="wheelBody">
@@ -560,11 +564,17 @@ function returnToTop(){
 // ----- tabs (URL lists always visible) -----
 var tabPlayer=$("tabPlayer"), tabUrls=$("tabUrls"), tabPlaylist=$("tabPlaylist");
 var pagePlayer=$("pagePlayer"), pageUrls=$("pageUrls"), pagePlaylist=$("pagePlaylist");
+function syncRandomOrderForMode(which){
+  var playlistMode=which==="playlist"&&currentKind==="playlists", toggle=$("randomToggle");
+  if(toggle){ toggle.checked=playlistMode; toggle.disabled=!playlistMode; toggle.title=playlistMode?"Random order is on for playlists":"Random order is available only in Playlist player mode"; }
+  if(typeof setPlShuffle==="function")setPlShuffle(playlistMode);
+}
 function setTab(which){
   tabPlayer.classList.toggle("active", which==="player"); tabUrls.classList.toggle("active", which==="urls");
   tabPlaylist.classList.toggle("active", which==="playlist");
   pagePlayer.classList.toggle("active", which==="player"); pageUrls.classList.add("active");
   pagePlaylist.classList.toggle("active", which==="playlist");
+  syncRandomOrderForMode(which);
 }
 tabPlayer.onclick=function(){ setTab("player"); };
 tabUrls.onclick=function(){ setTab("urls"); };
@@ -699,6 +709,7 @@ var urlKindButtons=[]; Array.prototype.forEach.call(document.querySelectorAll("#
   btn.onclick=function(){ var k=btn.getAttribute("data-kind"); if(LIST_KINDS.indexOf(k)===-1) k="speech";
     saveList(); loadList(k); currentKind=k; currentIndex=-1;
     urlKindButtons.forEach(function(b){ b.classList.toggle("active", b===btn); }); renderList();
+    syncRandomOrderForMode(pagePlaylist.classList.contains("active")?"playlist":"urls");
   };
 });
 $("addUrlBtn").onclick=async function(){ var raw=$("urlInput").value.trim(); if(!raw) return; await addUrl(raw); $("urlInput").value=""; if(currentIndex===-1 && items.length>0) currentIndex=0; };
@@ -783,6 +794,8 @@ function syncTimeWheel(){
     $(prefix+"Minutes").textContent=p.minutes; $(prefix+"Tens").textContent=p.tens; $(prefix+"Ones").textContent=p.ones;
     $(prefix+"Preview").textContent=fmtSec(total);
   });
+  $("wheelResetPlayBtn").textContent="PLAY "+fmtSec(getPlaySec())+" · RESET";
+  $("wheelResetPauseBtn").textContent="STOP "+fmtSec(getPauseSec())+" · RESET";
   Array.prototype.forEach.call(document.querySelectorAll(".wheelBox"),function(box){
     box.classList.toggle("active",box.dataset.wheelTarget===wheelSelection.target&&box.dataset.wheelUnit===wheelSelection.unit);
   });
@@ -1526,6 +1539,7 @@ function ensurePlayer(id, start){
 function setPlayUI(isPlaying,isPaused){
   var pb=$("playBtn"), pa=$("pauseBtn");
   pb.classList.toggle("playing", !!isPlaying);
+  pb.classList.toggle("waiting", !!isPaused);
   pb.classList.toggle("paused", false);
   pa.classList.toggle("paused", !!isPaused);
 }
