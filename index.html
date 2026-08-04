@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v109</title>
+<title>YT play/pause - v110</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
@@ -116,7 +116,7 @@
   .timeWheelSide{padding:8px 5px;background:#0c0f14;border:1px solid #252b35;border-radius:10px;min-width:0;}
   .timeWheelTitle{text-align:center;font-weight:800;font-size:13px;margin-bottom:6px;}
   .wheelDigits{display:grid;grid-template-columns:minmax(0,1fr) 6px minmax(0,1fr) minmax(0,1fr);gap:2px;}
-  .wheelColon{display:flex;align-items:center;justify-content:center;width:6px;font-size:25px;font-weight:900;color:#cbd5e1;}
+  .wheelColon{display:flex;align-items:center;align-self:start;justify-content:center;width:6px;height:52px;font-size:25px;font-weight:900;color:#cbd5e1;}
   .wheelColumn{display:flex;flex-direction:column;gap:3px;min-width:0;}
   .wheelStep{height:52px;min-width:0;padding:3px;font-size:27px;font-weight:900;border-radius:9px;background:#181d25;}
   .wheelBox{height:52px;min-width:0;padding:5px 3px;display:flex;flex-direction:column;gap:2px;background:#20252d;border:1px solid #303744;touch-action:none;cursor:ns-resize;user-select:none;}
@@ -153,6 +153,27 @@
   .dipSummaryScreen{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 0 8px;padding:7px 9px;border:1px solid #303744;border-radius:9px;background:#080b10;font-size:13px;font-weight:900;font-variant-numeric:tabular-nums;}
   .dipSummaryValue{color:#20df58;}
   .gapSummaryValue{color:#ff5a66;}
+  .dipSummaryScreen button{min-height:34px;padding:5px 10px;font-size:12px;font-weight:900;}
+  .dipSummaryValue{background:#123d27;border:1px solid #168746;}
+  .gapSummaryValue{background:#48151b;border:1px solid #a62e38;}
+  .audioModeRow{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:7px;}
+  .audioModeBtn.active.gate{background:#087f37;}
+  .audioModeBtn.active.dip{background:#b4232f;}
+  .dipVolumeControl{display:flex;align-items:center;gap:8px;flex:1 1 220px;}
+  .dipVolumeControl input{flex:1;accent-color:#ef4444;}
+  .dipVolumeReadout{min-width:42px;text-align:center;color:#ff6571;font-weight:900;font-variant-numeric:tabular-nums;}
+  @media (max-width:600px){
+    .dipWheelRow{gap:3px;overflow-x:hidden;}
+    .dipWheelGroup{padding:4px 2px;border-radius:7px;}
+    .dipWheelPair{gap:1px;}
+    .dipWheelColumn{width:32px;}
+    .dipWheelBox,.dipWheelStep{width:32px;min-width:32px;height:44px;padding:1px;border-radius:7px;}
+    .dipWheelBox small{font-size:6px;white-space:normal;line-height:1;}
+    .dipWheelBox strong{font-size:17px;}
+    .dipWheelStep{font-size:23px;}
+    .dipWheelDot{width:4px;height:44px;font-size:19px;}
+    .dipWheelLabel{font-size:9px;margin-bottom:3px;}
+  }
   .pauseOverlay{position:absolute;inset:0;border-radius:12px;background:rgba(0,0,0,0.75);pointer-events:none;display:none;}
   .wm{position:absolute;left:50%;transform:translateX(-50%);top:20%;background:rgba(0,0,0,0.45);color:#e5e7eb;font-size:12px;padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);pointer-events:none;opacity:0;transition:opacity .25s ease;}
   label{font-size:12px;color:var(--muted);display:block;margin-bottom:2px;}
@@ -208,12 +229,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><div class="titleMain"><h1>YT play/pause - v109</h1><button id="verticalLockBtn" class="verticalLockBtn active" type="button" aria-pressed="true" title="Keep the screen in portrait view">🔒 Vertical</button></div><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
+    <div class="titleRow"><div class="titleMain"><h1>YT play/pause - v110</h1><button id="verticalLockBtn" class="verticalLockBtn active" type="button" aria-pressed="true" title="Keep the screen in portrait view">🔒 Vertical</button></div><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div id="playerWrap" class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v109</div>
+      <div id="wm" class="wm">Jimmy James &middot; 03.08.2026 &middot; v110</div>
       <div class="speakerControl">
         <button id="speakerBtn" class="speakerBtn" type="button" title="Show volume">🔊</button>
         <div id="volumePanel" class="volumePanel" hidden>
@@ -276,7 +297,7 @@
     </div>
 
     
-    <!-- Row 1: toggles + dip settings -->
+    <!-- Row 1: compact controls -->
     <div class="row" style="margin-top:8px;">
       <div class="switchWrap" style="margin-left:8px;">
         <span>Pause first</span>
@@ -285,21 +306,7 @@
           <span class="slider"></span>
         </label>
       </div>
-      <div class="switchWrap" style="margin-left:8px;">
-        <span>Random dips</span>
-      <div class="switchWrap" style="margin-left:8px;">
-        <span>Improv names</span>
-        <label class="switch">
-          <input id="famousToggle" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-    
-        <label class="switch">
-          <input id="dipToggle" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
+      <button id="dipSettingsBtn" class="dipSettingsCompact" type="button" title="Adjust gate and dip settings">Gate / Dip settings</button>
       <span id="bigCountdown" class="bigCounter mode-play">00:00</span>
     </div>
 
@@ -317,35 +324,15 @@
       <button id="plPrevMainBtn" class="btn-main" title="Play previous track in current playlist">Previous playlist</button>
       <button id="nextSegmentBtn" class="btn-main" title="Jump to next segment">Next segment</button>
     </div>
-    <div class="row" style="justify-content:flex-end;margin-top:5px;">
-      <button id="dipSettingsBtn" class="dipSettingsCompact" title="Adjust dip settings">Dip settings</button>
-    </div>
-
     <div class="row">
       <span id="playCountdown" class="badge" style="display:none;">Play: 0:00</span>
       <span id="pauseCountdown" class="badge" style="display:none;">Pause: 0:00</span>
     </div>
 
-    <div class="row" style="margin-top:6px;align-items:flex-end;">
-      <div class="row nowrap">
-        <div>
-          <label>Play (mm:ss)</label>
-          <div class="row">
-            <input id="playMin" type="number" min="0" value="0">
-            <span>:</span>
-            <input id="playSec" type="number" min="0" value="15">
-          </div>
-        </div>
-        <div>
-          <label>Pause (mm:ss)</label>
-          <div class="row">
-            <input id="pauseMin" type="number" min="0" value="0">
-            <span>:</span>
-            <input id="pauseSec" type="number" min="0" value="40">
-          </div>
-        </div>
-      </div>
-    </div>
+    <input id="playMin" type="hidden" value="0">
+    <input id="playSec" type="hidden" value="15">
+    <input id="pauseMin" type="hidden" value="0">
+    <input id="pauseSec" type="hidden" value="40">
 
     <div class="row" style="margin-top:6px;">
       <div class="switchWrap"><span>Dim on pause</span><label class="switch"><input id="dimToggle" type="checkbox"><span class="slider"></span></label></div>
@@ -456,27 +443,26 @@
 
   <div id="dipSettingsCard" class="card" style="margin-top:8px;">
     <h2>Audio dip settings</h2>
-    <div class="dipSummaryScreen" aria-live="polite"><span id="dipTotalDisplay" class="dipSummaryValue">DIP 1.000–4.000 s</span><span id="dipGapTotalDisplay" class="gapSummaryValue">GAP 10–50 s</span></div>
+    <div class="dipSummaryScreen" aria-live="polite"><button id="dipTotalDisplay" class="dipSummaryValue" type="button" title="Reset gate/dip time">GATE / DIP 1.0 s · RESET</button><button id="dipGapTotalDisplay" class="gapSummaryValue" type="button" title="Reset gap range">GAP 0:10–0:50 · RESET</button></div>
+    <div class="audioModeRow">
+      <button id="gateModeBtn" class="audioModeBtn gate" type="button" aria-pressed="false">Gate mode</button>
+      <button id="dipModeBtn" class="audioModeBtn dip" type="button" aria-pressed="false">Dip mode</button>
+      <span id="audioModeStatus" class="badge">OFF</span>
+    </div>
     <div class="dipWheelRow">
       <div class="dipWheelGroup length">
-        <div class="dipWheelLabel">DIP FROM</div>
+        <div class="dipWheelLabel">GATE / DIP TIME</div>
         <div class="dipWheelPair">
-          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="from" data-dip-unit="seconds"><small>Seconds</small><strong id="dipFromSec">1</strong></div><button class="dipWheelStep" type="button" data-dip-field="from" data-dip-unit="seconds" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="from" data-dip-unit="seconds" data-dip-delta="-1">−</button></div>
+          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="effect" data-dip-unit="seconds"><small>Seconds</small><strong id="effectSeconds">1</strong></div><button class="dipWheelStep" type="button" data-dip-field="effect" data-dip-unit="seconds" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="effect" data-dip-unit="seconds" data-dip-delta="-1">−</button></div>
           <span class="dipWheelDot" aria-hidden="true">.</span>
-          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="from" data-dip-unit="millis"><small>Milliseconds</small><strong id="dipFromMillis">000</strong></div><button class="dipWheelStep" type="button" data-dip-field="from" data-dip-unit="millis" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="from" data-dip-unit="millis" data-dip-delta="-1">−</button></div>
-        </div>
-      </div>
-      <div class="dipWheelGroup length">
-        <div class="dipWheelLabel">DIP TO</div>
-        <div class="dipWheelPair">
-          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="to" data-dip-unit="seconds"><small>Seconds</small><strong id="dipToSec">4</strong></div><button class="dipWheelStep" type="button" data-dip-field="to" data-dip-unit="seconds" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="to" data-dip-unit="seconds" data-dip-delta="-1">−</button></div>
-          <span class="dipWheelDot" aria-hidden="true">.</span>
-          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="to" data-dip-unit="millis"><small>Milliseconds</small><strong id="dipToMillis">000</strong></div><button class="dipWheelStep" type="button" data-dip-field="to" data-dip-unit="millis" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="to" data-dip-unit="millis" data-dip-delta="-1">−</button></div>
+          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="effect" data-dip-unit="tenths"><small>1/10 sec</small><strong id="effectTenths">0</strong></div><button class="dipWheelStep" type="button" data-dip-field="effect" data-dip-unit="tenths" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="effect" data-dip-unit="tenths" data-dip-delta="-1">−</button></div>
         </div>
       </div>
       <div class="dipWheelGroup gap">
         <div class="dipWheelLabel">GAP FROM</div>
         <div class="dipWheelPair">
+          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapFrom" data-dip-unit="minutes"><small>Minutes</small><strong id="dipGapFromMinutes">0</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="minutes" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="minutes" data-dip-delta="-1">−</button></div>
+          <span class="dipWheelDot" aria-hidden="true">:</span>
           <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapFrom" data-dip-unit="tens"><small>10 seconds</small><strong id="dipGapFromTens">1</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="tens" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="tens" data-dip-delta="-1">−</button></div>
           <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapFrom" data-dip-unit="ones"><small>Seconds</small><strong id="dipGapFromOnes">0</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="ones" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapFrom" data-dip-unit="ones" data-dip-delta="-1">−</button></div>
         </div>
@@ -484,47 +470,24 @@
       <div class="dipWheelGroup gap">
         <div class="dipWheelLabel">GAP TO</div>
         <div class="dipWheelPair">
+          <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapTo" data-dip-unit="minutes"><small>Minutes</small><strong id="dipGapToMinutes">0</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="minutes" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="minutes" data-dip-delta="-1">−</button></div>
+          <span class="dipWheelDot" aria-hidden="true">:</span>
           <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapTo" data-dip-unit="tens"><small>10 seconds</small><strong id="dipGapToTens">5</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="tens" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="tens" data-dip-delta="-1">−</button></div>
           <div class="dipWheelColumn"><div class="dipWheelBox" data-dip-field="gapTo" data-dip-unit="ones"><small>Seconds</small><strong id="dipGapToOnes">0</strong></div><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="ones" data-dip-delta="1">+</button><button class="dipWheelStep" type="button" data-dip-field="gapTo" data-dip-unit="ones" data-dip-delta="-1">−</button></div>
         </div>
       </div>
       <input id="dipLenMin" type="hidden" value="1.0">
-      <input id="dipLenMax" type="hidden" value="4.0">
+      <input id="dipLenMax" type="hidden" value="1.0">
       <input id="dipGapMin" type="hidden" value="10">
       <input id="dipGapMax" type="hidden" value="50">
+      <input id="dipFadeMs" type="hidden" value="800">
     </div>
-    <div class="row">
-      <div>
-        <label>Dip volume percent (0=mute, 100=no change)</label>
-        <input id="dipVolumePct" type="number" min="0" max="100" value="10">
-      </div>
-      <div class="switchWrap" style="min-width:110px;">
-        <span>Invert</span>
-        <label class="switch">
-          <input id="dipInvertToggle" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="switchWrap" style="min-width:110px;">
-        <span>Soft fade</span>
-        <label class="switch">
-          <input id="dipSoftToggle" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="switchWrap" style="min-width:110px;">
-        <span>Soft intro</span>
-        <label class="switch">
-          <input id="softIntroToggle" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div>
-        <label>Fade ms</label>
-        <input id="dipFadeMs" type="number" min="0" max="10000" value="800">
-      </div>
+    <div class="row" style="margin-top:6px;">
+      <div class="switchWrap"><span>Soft gate open</span><label class="switch"><input id="softGateOpenToggle" type="checkbox"><span class="slider"></span></label></div>
+      <div class="switchWrap"><span>Soft gate close</span><label class="switch"><input id="softGateCloseToggle" type="checkbox"><span class="slider"></span></label></div>
+      <label class="dipVolumeControl"><span>Dip volume</span><input id="dipVolumePct" type="range" min="0" max="100" value="0"><span id="dipVolumeReadout" class="dipVolumeReadout">0%</span></label>
     </div>
-    <div class="banner tiny">Dip length is randomly selected from <b>DIP FROM</b> to <b>DIP TO</b>. The wait is randomly selected from <b>GAP FROM</b> to <b>GAP TO</b>. After every dip, volume returns to its exact pre-dip level. With <b>Invert</b>, the dip window plays at the speaker-slider volume, then always fades down using <b>Fade ms</b>.</div>
+    <div class="banner tiny"><b>Gate mode:</b> silence between openings; each opening plays at the speaker-slider volume. <b>Dip mode:</b> normal sound between dips; each dip uses the Dip volume. Only one mode can be active, and both start off.</div>
   </div>
 </div>
 
@@ -1202,6 +1165,106 @@ function initDipUI(){
   });
 }
 
+// v110: mutually exclusive Gate and Dip modes.
+var GATE_DURATION_KEY="YT110_GATE_DURATION";
+var GATE_GAP_FROM_KEY="YT110_GATE_GAP_FROM";
+var GATE_GAP_TO_KEY="YT110_GATE_GAP_TO";
+var GATE_DIP_VOLUME_KEY="YT110_DIP_VOLUME";
+var SOFT_GATE_OPEN_KEY="YT110_SOFT_GATE_OPEN";
+var SOFT_GATE_CLOSE_KEY="YT110_SOFT_GATE_CLOSE";
+var audioMode="off";
+
+function audioSettingNumber(key,fallback){ var raw=localStorage.getItem(key), value=parseFloat(raw); return raw===null||isNaN(value)?fallback:value; }
+function formatGateGap(total){ total=Math.max(0,Math.min(5999,Math.round(total||0))); var m=Math.floor(total/60),s=total%60; return m+":"+(s<10?"0":"")+s; }
+function currentGateDuration(){ return Math.max(0,Math.min(99.9,readDipNumber("dipLenMin",1))); }
+function currentAudioMode(){ return audioMode; }
+function softGateOpen(){ var el=$("softGateOpenToggle"); return el?el.checked:localStorage.getItem(SOFT_GATE_OPEN_KEY)==="1"; }
+function softGateClose(){ var el=$("softGateCloseToggle"); return el?el.checked:localStorage.getItem(SOFT_GATE_CLOSE_KEY)==="1"; }
+
+function syncDipWheelDisplay(){
+  var duration=currentGateDuration(), totalTenths=Math.round(duration*10), seconds=Math.floor(totalTenths/10), tenths=totalTenths%10;
+  var gapFrom=Math.max(0,Math.min(5999,Math.round(readDipNumber("dipGapMin",10))));
+  var gapTo=Math.max(0,Math.min(5999,Math.round(readDipNumber("dipGapMax",50))));
+  $("effectSeconds").textContent=seconds; $("effectTenths").textContent=tenths;
+  $("dipGapFromMinutes").textContent=Math.floor(gapFrom/60); $("dipGapFromTens").textContent=Math.floor((gapFrom%60)/10); $("dipGapFromOnes").textContent=gapFrom%10;
+  $("dipGapToMinutes").textContent=Math.floor(gapTo/60); $("dipGapToTens").textContent=Math.floor((gapTo%60)/10); $("dipGapToOnes").textContent=gapTo%10;
+  $("dipTotalDisplay").textContent="GATE / DIP "+seconds+"."+tenths+" s · RESET";
+  $("dipGapTotalDisplay").textContent="GAP "+formatGateGap(gapFrom)+"–"+formatGateGap(gapTo)+" · RESET";
+}
+function saveDipSettings(){
+  var duration=currentGateDuration(), gapFrom=Math.max(0,Math.min(5999,Math.round(readDipNumber("dipGapMin",10)))), gapTo=Math.max(gapFrom,Math.min(5999,Math.round(readDipNumber("dipGapMax",50))));
+  var dipVol=Math.max(0,Math.min(100,readDipNumber("dipVolumePct",0)));
+  $("dipLenMin").value=duration.toFixed(1); $("dipLenMax").value=duration.toFixed(1); $("dipGapMin").value=gapFrom; $("dipGapMax").value=gapTo;
+  localStorage.setItem(GATE_DURATION_KEY,String(duration)); localStorage.setItem(GATE_GAP_FROM_KEY,String(gapFrom)); localStorage.setItem(GATE_GAP_TO_KEY,String(gapTo)); localStorage.setItem(GATE_DIP_VOLUME_KEY,String(dipVol));
+  localStorage.setItem(SOFT_GATE_OPEN_KEY,softGateOpen()?"1":"0"); localStorage.setItem(SOFT_GATE_CLOSE_KEY,softGateClose()?"1":"0");
+  if($("dipVolumeReadout")) $("dipVolumeReadout").textContent=Math.round(dipVol)+"%";
+}
+function applyDipSettingsToInputs(){
+  var duration=audioSettingNumber(GATE_DURATION_KEY,1), gapFrom=audioSettingNumber(GATE_GAP_FROM_KEY,10), gapTo=audioSettingNumber(GATE_GAP_TO_KEY,50), dipVol=audioSettingNumber(GATE_DIP_VOLUME_KEY,0);
+  $("dipLenMin").value=duration.toFixed(1); $("dipLenMax").value=duration.toFixed(1); $("dipGapMin").value=gapFrom; $("dipGapMax").value=Math.max(gapFrom,gapTo); $("dipVolumePct").value=dipVol; $("dipVolumeReadout").textContent=Math.round(dipVol)+"%";
+  $("softGateOpenToggle").checked=localStorage.getItem(SOFT_GATE_OPEN_KEY)==="1"; $("softGateCloseToggle").checked=localStorage.getItem(SOFT_GATE_CLOSE_KEY)==="1";
+  syncDipWheelDisplay();
+}
+function adjustDipWheel(field,unit,delta){
+  delta=delta<0?-1:1;
+  if(field==="effect"){
+    var tenths=Math.round(currentGateDuration()*10), step=unit==="seconds"?10:1; tenths=(tenths+delta*step+1000)%1000;
+    $("dipLenMin").value=(tenths/10).toFixed(1); $("dipLenMax").value=(tenths/10).toFixed(1);
+  }else{
+    var id=field==="gapFrom"?"dipGapMin":"dipGapMax", fallback=field==="gapFrom"?10:50;
+    var value=Math.max(0,Math.min(5999,Math.round(readDipNumber(id,fallback))));
+    var step=unit==="minutes"?60:unit==="tens"?10:1; value=(value+delta*step+6000)%6000; $(id).value=value;
+    var from=readDipNumber("dipGapMin",10),to=readDipNumber("dipGapMax",50); if(from>to){ if(field==="gapFrom")$("dipGapMax").value=from; else $("dipGapMin").value=to; }
+  }
+  saveDipSettings(); syncDipWheelDisplay();
+}
+function initDipWheels(){
+  Array.prototype.forEach.call(document.querySelectorAll(".dipWheelStep"),function(btn){ btn.onclick=function(){ adjustDipWheel(btn.dataset.dipField,btn.dataset.dipUnit,parseInt(btn.dataset.dipDelta,10)||1); }; });
+  Array.prototype.forEach.call(document.querySelectorAll(".dipWheelBox"),function(box){
+    var drag=null; box.addEventListener("wheel",function(e){e.preventDefault();adjustDipWheel(box.dataset.dipField,box.dataset.dipUnit,e.deltaY<0?1:-1);},{passive:false});
+    box.addEventListener("pointerdown",function(e){e.preventDefault();drag={id:e.pointerId,y:e.clientY,steps:0};if(box.setPointerCapture)box.setPointerCapture(e.pointerId);});
+    box.addEventListener("pointermove",function(e){if(!drag||drag.id!==e.pointerId)return;var steps=Math.trunc((drag.y-e.clientY)/18);if(steps!==drag.steps){adjustDipWheel(box.dataset.dipField,box.dataset.dipUnit,steps>drag.steps?1:-1);drag.steps=steps;}});
+    box.addEventListener("pointerup",function(){drag=null;}); box.addEventListener("pointercancel",function(){drag=null;});
+  }); syncDipWheelDisplay();
+}
+function getDipTargetVolume(){ return Math.max(0,Math.min(100,readDipNumber("dipVolumePct",0))); }
+function getDipLengthMs(){ return currentGateDuration()*1000; }
+function setPlayerVolumeSmooth(targetVol,useFade){
+  if(!player||typeof player.setVolume!=="function")return; targetVol=Math.max(0,Math.min(100,Math.round(targetVol))); var fadeMs=800; clearDipFade();
+  if(!useFade){ setPlayerVolumeImmediate(targetVol); return; }
+  var startVol=getCurrentPlayerVolume(),steps=Math.max(1,Math.round(fadeMs/50)),step=0; try{player.unMute&&player.unMute();}catch(e){}
+  dipFadeTimer=setInterval(function(){ step++; var v=Math.round(startVol+(targetVol-startVol)*(step/steps)); try{player.unMute&&player.unMute();player.setVolume(v);if(step>=steps){clearDipFade();if(targetVol===0&&player.mute)player.mute();}}catch(e){clearDipFade();} },Math.max(20,Math.floor(fadeMs/steps)));
+}
+function updateAudioModeUI(){
+  var gate=$("gateModeBtn"),dip=$("dipModeBtn"),status=$("audioModeStatus"); gate.classList.toggle("active",audioMode==="gate");dip.classList.toggle("active",audioMode==="dip");gate.setAttribute("aria-pressed",audioMode==="gate"?"true":"false");dip.setAttribute("aria-pressed",audioMode==="dip"?"true":"false");status.textContent=audioMode==="off"?"OFF":audioMode.toUpperCase();
+}
+function applyDipBaselineForPlay(){
+  if(!player)return; if(audioMode==="gate")setPlayerVolumeSmooth(0,softGateClose()); else restoreNormalVolume();
+}
+function scheduleNextDip(){ clearDipScheduleTimers(); if(audioMode==="off")return; var min=readDipNumber("dipGapMin",10),max=readDipNumber("dipGapMax",50); dipTimerGap=setTimeout(beginDip,Math.max(50,rndInt(min,max)*1000)); }
+function beginDip(){
+  if(audioMode==="off")return; if(!player||typeof player.setVolume!=="function"){scheduleNextDip();return;} dipping=true;
+  if(audioMode==="gate")setPlayerVolumeSmooth(baseVolume,softGateOpen()); else setPlayerVolumeSmooth(getDipTargetVolume(),softGateClose());
+  dipTimerLen=setTimeout(endDip,Math.max(50,getDipLengthMs()));
+}
+function endDip(){
+  if(audioMode==="gate")setPlayerVolumeSmooth(0,softGateClose()); else if(audioMode==="dip")setPlayerVolumeSmooth(baseVolume,softGateOpen());
+  dipping=false; scheduleNextDip();
+}
+function setAudioMode(mode){
+  mode=(mode==="gate"||mode==="dip")?mode:"off"; clearDipTimers(); audioMode=mode; dipEnabled=mode!=="off"; localStorage.setItem(DIP_TOGGLE_KEY,"0"); updateAudioModeUI();
+  if(mode==="off")restoreNormalVolume(); else{applyDipBaselineForPlay();scheduleNextDip();}
+}
+function setDipEnabled(flag){ if(!flag)setAudioMode("off"); else setAudioMode("dip"); }
+function initDipUI(){
+  applyDipSettingsToInputs();initDipWheels();audioMode="off";dipEnabled=false;updateAudioModeUI();
+  $("gateModeBtn").onclick=function(){setAudioMode(audioMode==="gate"?"off":"gate");}; $("dipModeBtn").onclick=function(){setAudioMode(audioMode==="dip"?"off":"dip");};
+  $("dipTotalDisplay").onclick=function(){ $("dipLenMin").value="0.0";$("dipLenMax").value="0.0";saveDipSettings();syncDipWheelDisplay(); };
+  $("dipGapTotalDisplay").onclick=function(){ $("dipGapMin").value="0";$("dipGapMax").value="0";saveDipSettings();syncDipWheelDisplay(); };
+  $("dipVolumePct").oninput=function(){saveDipSettings();if(audioMode==="dip"&&dipping)setPlayerVolumeImmediate(getDipTargetVolume());};
+  $("softGateOpenToggle").onchange=saveDipSettings; $("softGateCloseToggle").onchange=saveDipSettings;
+}
+
 var PL_SHUFFLE_KEY="YT79_PL_SHUFFLE";
 var PL_LOOP_KEY="YT79_PL_LOOP";
 var PL_RANDOM_V99_INIT="YT99_RANDOM_INITIALIZED";
@@ -1368,7 +1431,7 @@ function fadeToVolume(targetVol, fadeMs, done){
   }, Math.max(20, Math.floor(fadeMs / steps)));
 }
 function getPlayBaselineVolume(){
-  if(dipEnabled && readDipFlag("dipInvertToggle", DIP_INVERT_KEY)) return getDipTargetVolume();
+  if(audioMode==="gate") return 0;
   return Math.max(0, Math.min(100, baseVolume));
 }
 function startPlaybackWithSoftIntro(){
@@ -1410,7 +1473,9 @@ function initCompactControls(){
   if(speaker) speaker.onclick=function(){ panel.hidden=!panel.hidden; };
   if(slider){ slider.value=savedVolume(); slider.oninput=function(){
     var v=parseInt(slider.value,10)||0; localStorage.setItem(VOLUME_KEY,String(v)); baseVolume=v; updateSpeakerIcon(v);
-    var audible=(dipEnabled && readDipFlag("dipInvertToggle",DIP_INVERT_KEY) && !dipping)?getDipTargetVolume():v;
+    var audible=v;
+    if(audioMode==="gate"&&!dipping)audible=0;
+    if(audioMode==="dip"&&dipping)audible=getDipTargetVolume();
     try{ if(player){ if(audible<=0){player.mute&&player.mute();}else{player.unMute&&player.unMute();player.setVolume&&player.setVolume(audible);} } }catch(e){}
   }; }
   applySavedVolume();
@@ -1494,7 +1559,7 @@ function loadByIndex(idx, autoStart){
 }
 function handleEnded(){ var ni=nextIndex(); if(ni<0) return; loadByIndex(ni, !bypassToggle.checked); }
 
-function startPlainPlay(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); stopBar(); if(!player) return; captureBaseVolume(); if(isSoftIntro()) startPlaybackWithSoftIntro(); else player.playVideo(); setPlayUI(true,false); }
+function startPlainPlay(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); stopBar(); if(!player) return; captureBaseVolume(); applyDipBaselineForPlay(); scheduleNextDip(); if(isSoftIntro()) startPlaybackWithSoftIntro(); else player.playVideo(); setPlayUI(true,false); }
 function pauseNow(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); restoreNormalVolume(); stopBar(); if(player){ player.pauseVideo(); } if(dimToggle.checked) pauseOverlay.style.display="block"; setPlayUI(false,true); }
 
 var liveCyclePlay=null, liveCyclePause=null;
