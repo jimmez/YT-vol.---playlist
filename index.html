@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>YT play/pause - v111</title>
+<title>YT play/pause - v112</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <style>
   .nameBannerBelow{margin-top:8px;text-align:center;font-weight:700;color:#e5e7eb;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 10px;border-radius:10px;}
@@ -127,8 +127,8 @@
   .wheelBox{order:1;}
   .wheelStep[data-wheel-delta="1"]{order:2;}
   .wheelStep[data-wheel-delta="-1"]{order:3;}
-  .wheelBox small{font-size:8px;color:#a4acb6;white-space:nowrap;}
-  .wheelBox strong{font-size:20px;font-variant-numeric:tabular-nums;}
+  .wheelBox small{display:none;}
+  .wheelBox strong{font-size:30px;font-variant-numeric:tabular-nums;margin:auto;}
   .wheelBox.active{outline:2px solid #3e82ff;background:#15213a;}
   .wheelBox.dragging{background:#1d3158;transform:scale(1.02);}
   .wheelPreview{text-align:center;margin-top:5px;font-size:14px;font-weight:800;color:#dbeafe;font-variant-numeric:tabular-nums;}
@@ -149,7 +149,7 @@
   .dipWheelBox,.dipWheelStep{width:52px;height:52px;min-width:52px;padding:3px;border-radius:9px;}
   .dipWheelBox{order:1;display:flex;flex-direction:column;background:#20252d;border:1px solid #303744;cursor:ns-resize;touch-action:none;user-select:none;}
   .dipWheelBox small{display:none;}
-  .dipWheelBox strong{font-size:22px;font-variant-numeric:tabular-nums;margin:auto;}
+  .dipWheelBox strong{font-size:28px;font-variant-numeric:tabular-nums;margin:auto;}
   .dipWheelStep{font-size:27px;font-weight:900;background:#181d25;}
   .dipWheelStep[data-dip-delta="1"]{order:2;}
   .dipWheelStep[data-dip-delta="-1"]{order:3;}
@@ -173,7 +173,7 @@
     .dipWheelColumn{width:32px;}
     .dipWheelBox,.dipWheelStep{width:32px;min-width:32px;height:44px;padding:1px;border-radius:7px;}
     .dipWheelBox small{font-size:6px;white-space:normal;line-height:1;}
-    .dipWheelBox strong{font-size:17px;}
+    .dipWheelBox strong{font-size:22px;}
     .dipWheelStep{font-size:23px;}
     .dipWheelDot{width:4px;height:44px;font-size:19px;}
     .dipWheelLabel{font-size:9px;margin-bottom:3px;}
@@ -233,12 +233,12 @@
 <div id="nameBanner" style="position:sticky;top:0;z-index:5;text-align:center;font-weight:700;padding:8px 12px;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.1);display:none;"></div>
 <div class="wrap">
   <div class="card">
-    <div class="titleRow"><div class="titleMain"><h1>YT play/pause - v111</h1><button id="verticalLockBtn" class="verticalLockBtn active" type="button" aria-pressed="true" title="Keep the screen in portrait view">🔒 Vertical</button></div><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
+    <div class="titleRow"><div class="titleMain"><h1>YT play/pause - v112</h1><button id="verticalLockBtn" class="verticalLockBtn active" type="button" aria-pressed="true" title="Keep the screen in portrait view">🔒 Vertical</button></div><div id="nameBannerHeader" class="nameBannerHead" aria-live="polite"></div></div>
 
     <div id="playerWrap" class="playerWrap">
       <div id="player"></div>
       <div id="pauseOverlay" class="pauseOverlay"></div>
-      <div id="wm" class="wm">Jimmy James &middot; 04.08.2026 &middot; v111</div>
+      <div id="wm" class="wm">Jimmy James &middot; 04.08.2026 &middot; v112</div>
       <div class="speakerControl">
         <button id="speakerBtn" class="speakerBtn" type="button" title="Show volume">🔊</button>
         <div id="volumePanel" class="volumePanel" hidden>
@@ -258,8 +258,6 @@
     <div id="wheelPanel" class="collapsiblePanel">
       <div class="timeWheel" aria-label="Play and pause time wheel">
         <div class="timeWheelControls">
-          <button id="wheelResetPlayBtn" class="wheelReset wheelResetPlay" type="button">PLAY 0:15 · RESET</button>
-          <button id="wheelResetPauseBtn" class="wheelReset wheelResetPause" type="button">STOP 0:40 · RESET</button>
           <button id="wheelVisibilityBtn" class="wheelReset" type="button">Hide</button>
         </div>
         <div id="wheelBody">
@@ -447,7 +445,6 @@
 
   <div id="dipSettingsCard" class="card" style="margin-top:8px;">
     <h2>Audio dip settings</h2>
-    <div class="dipSummaryScreen" aria-live="polite"><button id="dipTotalDisplay" class="dipSummaryValue" type="button" title="Reset gate/dip time">GATE / DIP 1.0 s · RESET</button><button id="dipGapTotalDisplay" class="gapSummaryValue" type="button" title="Reset gap range">GAP 0:10–0:50 · RESET</button></div>
     <div class="audioModeRow">
       <button id="gateModeBtn" class="audioModeBtn gate" type="button" aria-pressed="false">Gate mode</button>
       <button id="dipModeBtn" class="audioModeBtn dip" type="button" aria-pressed="false">Dip mode</button>
@@ -794,13 +791,17 @@ function syncTimeWheel(){
     $(prefix+"Minutes").textContent=p.minutes; $(prefix+"Tens").textContent=p.tens; $(prefix+"Ones").textContent=p.ones;
     $(prefix+"Preview").textContent=fmtSec(total);
   });
-  $("wheelResetPlayBtn").textContent="PLAY "+fmtSec(getPlaySec())+" · RESET";
-  $("wheelResetPauseBtn").textContent="STOP "+fmtSec(getPauseSec())+" · RESET";
   Array.prototype.forEach.call(document.querySelectorAll(".wheelBox"),function(box){
     box.classList.toggle("active",box.dataset.wheelTarget===wheelSelection.target&&box.dataset.wheelUnit===wheelSelection.unit);
   });
 }
 function selectWheelBox(box){ wheelSelection={target:box.dataset.wheelTarget,unit:box.dataset.wheelUnit}; syncTimeWheel(); }
+function resetWheelBox(box){
+  var target=box.dataset.wheelTarget,p=wheelParts(wheelTime(target)),unit=box.dataset.wheelUnit;
+  if(unit==="minutes")p.minutes=0; else if(unit==="tens")p.tens=0; else p.ones=0;
+  setWheelTime(target,p.minutes*60+p.tens*10+p.ones); saveSelectedPreset(getPlaySec(),getPauseSec());
+  renderPresets(getPlaySec(),getPauseSec());renderRecentPresets(getPlaySec(),getPauseSec());syncTimeWheel();applyWheelTimingLive(target);
+}
 function adjustSelectedWheel(delta){
   var target=wheelSelection.target, p=wheelParts(wheelTime(target)), unit=wheelSelection.unit;
   if(unit==="minutes") p.minutes=(p.minutes+delta+100)%100;
@@ -811,16 +812,16 @@ function adjustSelectedWheel(delta){
 }
 function initTimeWheel(){
   Array.prototype.forEach.call(document.querySelectorAll(".wheelBox"),function(box){
-    var drag=null;
-    box.onclick=function(){ selectWheelBox(box); };
+    var drag=null,didDrag=false;
+    box.onclick=function(){ if(didDrag){didDrag=false;return;} selectWheelBox(box);resetWheelBox(box); };
     box.addEventListener("wheel",function(e){ e.preventDefault(); selectWheelBox(box); adjustSelectedWheel(e.deltaY<0?1:-1); },{passive:false});
     box.addEventListener("pointerdown",function(e){
-      e.preventDefault(); selectWheelBox(box); drag={id:e.pointerId,startY:e.clientY,lastStep:0}; box.classList.add("dragging");
+      e.preventDefault(); didDrag=false;selectWheelBox(box); drag={id:e.pointerId,startY:e.clientY,lastStep:0}; box.classList.add("dragging");
       try{ box.setPointerCapture(e.pointerId); }catch(ex){}
     });
     box.addEventListener("pointermove",function(e){
       if(!drag||e.pointerId!==drag.id)return; var step=Math.trunc((drag.startY-e.clientY)/22);
-      if(step!==drag.lastStep){ adjustSelectedWheel(step-drag.lastStep); drag.lastStep=step; }
+      if(step!==drag.lastStep){didDrag=true;adjustSelectedWheel(step-drag.lastStep); drag.lastStep=step; }
     });
     function endDrag(e){ if(!drag||e.pointerId!==drag.id)return; drag=null; box.classList.remove("dragging"); }
     box.addEventListener("pointerup",endDrag); box.addEventListener("pointercancel",endDrag);
@@ -831,12 +832,6 @@ function initTimeWheel(){
       adjustSelectedWheel(parseInt(btn.dataset.wheelDelta,10)||0);
     };
   });
-  $("wheelResetPlayBtn").onclick=function(){
-    setWheelTime("play",0); saveSelectedPreset(0,getPauseSec()); renderPresets(0,getPauseSec()); renderRecentPresets(0,getPauseSec()); syncTimeWheel();
-  };
-  $("wheelResetPauseBtn").onclick=function(){
-    setWheelTime("pause",0); saveSelectedPreset(getPlaySec(),0); renderPresets(getPlaySec(),0); renderRecentPresets(getPlaySec(),0); syncTimeWheel();
-  };
   var wheelBody=$("wheelBody"), visibilityBtn=$("wheelVisibilityBtn"), wheelHidden=localStorage.getItem(WHEEL_HIDDEN_KEY)==="1";
   function applyWheelVisibility(){ wheelBody.hidden=wheelHidden; visibilityBtn.textContent=wheelHidden?"Show":"Hide"; }
   visibilityBtn.onclick=function(){ wheelHidden=!wheelHidden; localStorage.setItem(WHEEL_HIDDEN_KEY,wheelHidden?"1":"0"); applyWheelVisibility(); };
@@ -1201,8 +1196,6 @@ function syncDipWheelDisplay(){
   $("effectSeconds").textContent=seconds; $("effectTenths").textContent=tenths;
   $("dipGapFromMinutes").textContent=Math.floor(gapFrom/60); $("dipGapFromTens").textContent=Math.floor((gapFrom%60)/10); $("dipGapFromOnes").textContent=gapFrom%10;
   $("dipGapToMinutes").textContent=Math.floor(gapTo/60); $("dipGapToTens").textContent=Math.floor((gapTo%60)/10); $("dipGapToOnes").textContent=gapTo%10;
-  $("dipTotalDisplay").textContent="GATE / DIP "+seconds+"."+tenths+" s · RESET";
-  $("dipGapTotalDisplay").textContent="GAP "+formatGateGap(gapFrom)+"–"+formatGateGap(gapTo)+" · RESET";
 }
 function saveDipSettings(){
   var duration=currentGateDuration(), gapFrom=Math.max(0,Math.min(5999,Math.round(readDipNumber("dipGapMin",10)))), gapTo=Math.max(gapFrom,Math.min(5999,Math.round(readDipNumber("dipGapMax",50))));
@@ -1231,12 +1224,29 @@ function adjustDipWheel(field,unit,delta){
   }
   saveDipSettings(); syncDipWheelDisplay();
 }
+function resetDipWheelBox(field,unit){
+  if(field==="effect"){
+    var total=Math.round(currentGateDuration()*10),seconds=Math.floor(total/10),tenths=total%10;
+    if(unit==="seconds")seconds=0;else tenths=0;
+    $("dipLenMin").value=(seconds+tenths/10).toFixed(1);$("dipLenMax").value=$("dipLenMin").value;
+  }else{
+    var id=field==="gapFrom"?"dipGapMin":"dipGapMax",fallback=field==="gapFrom"?10:50,value=Math.max(0,Math.min(5999,Math.round(readDipNumber(id,fallback))));
+    var minutes=Math.floor(value/60),tens=Math.floor((value%60)/10),ones=value%10;
+    if(unit==="minutes")minutes=0;else if(unit==="tens")tens=0;else ones=0;
+    $(id).value=minutes*60+tens*10+ones;
+    var from=readDipNumber("dipGapMin",10),to=readDipNumber("dipGapMax",50);if(from>to){if(field==="gapFrom")$("dipGapMax").value=from;else $("dipGapMin").value=to;}
+  }
+  saveDipSettings();syncDipWheelDisplay();
+}
 function initDipWheels(){
   Array.prototype.forEach.call(document.querySelectorAll(".dipWheelStep"),function(btn){ btn.onclick=function(){ adjustDipWheel(btn.dataset.dipField,btn.dataset.dipUnit,parseInt(btn.dataset.dipDelta,10)||1); }; });
   Array.prototype.forEach.call(document.querySelectorAll(".dipWheelBox"),function(box){
-    var drag=null; box.addEventListener("wheel",function(e){e.preventDefault();adjustDipWheel(box.dataset.dipField,box.dataset.dipUnit,e.deltaY<0?1:-1);},{passive:false});
-    box.addEventListener("pointerdown",function(e){e.preventDefault();drag={id:e.pointerId,y:e.clientY,steps:0};if(box.setPointerCapture)box.setPointerCapture(e.pointerId);});
-    box.addEventListener("pointermove",function(e){if(!drag||drag.id!==e.pointerId)return;var steps=Math.trunc((drag.y-e.clientY)/18);if(steps!==drag.steps){adjustDipWheel(box.dataset.dipField,box.dataset.dipUnit,steps>drag.steps?1:-1);drag.steps=steps;}});
+    var drag=null,didDrag=false;box.setAttribute("role","button");box.tabIndex=0;box.title="Click to reset this digit";
+    box.onclick=function(){if(didDrag){didDrag=false;return;}resetDipWheelBox(box.dataset.dipField,box.dataset.dipUnit);};
+    box.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();resetDipWheelBox(box.dataset.dipField,box.dataset.dipUnit);}};
+    box.addEventListener("wheel",function(e){e.preventDefault();adjustDipWheel(box.dataset.dipField,box.dataset.dipUnit,e.deltaY<0?1:-1);},{passive:false});
+    box.addEventListener("pointerdown",function(e){e.preventDefault();didDrag=false;drag={id:e.pointerId,y:e.clientY,steps:0};if(box.setPointerCapture)box.setPointerCapture(e.pointerId);});
+    box.addEventListener("pointermove",function(e){if(!drag||drag.id!==e.pointerId)return;var steps=Math.trunc((drag.y-e.clientY)/18);if(steps!==drag.steps){didDrag=true;adjustDipWheel(box.dataset.dipField,box.dataset.dipUnit,steps>drag.steps?1:-1);drag.steps=steps;}});
     box.addEventListener("pointerup",function(){drag=null;}); box.addEventListener("pointercancel",function(){drag=null;});
   }); syncDipWheelDisplay();
 }
@@ -1272,8 +1282,6 @@ function setDipEnabled(flag){ if(!flag)setAudioMode("off"); else setAudioMode("d
 function initDipUI(){
   applyDipSettingsToInputs();initDipWheels();audioMode="off";dipEnabled=false;updateAudioModeUI();
   $("gateModeBtn").onclick=function(){setAudioMode(audioMode==="gate"?"off":"gate");}; $("dipModeBtn").onclick=function(){setAudioMode(audioMode==="dip"?"off":"dip");};
-  $("dipTotalDisplay").onclick=function(){ $("dipLenMin").value="0.0";$("dipLenMax").value="0.0";saveDipSettings();syncDipWheelDisplay(); };
-  $("dipGapTotalDisplay").onclick=function(){ $("dipGapMin").value="0";$("dipGapMax").value="0";saveDipSettings();syncDipWheelDisplay(); };
   $("dipVolumePct").oninput=function(){saveDipSettings();if(audioMode==="dip"&&dipping)setPlayerVolumeImmediate(getDipTargetVolume());};
   $("softGateOpenToggle").onchange=saveDipSettings; $("softGateCloseToggle").onchange=saveDipSettings;
 }
@@ -1416,6 +1424,19 @@ var dimToggle=$("dimToggle"), randomToggle=$("randomToggle"), bypassToggle=$("by
 
 function isSoftIntro(){ return localStorage.getItem(SOFT_INTRO_KEY)==="1"; }
 function clearIntroFade(){ if(introFadeTimer){ clearInterval(introFadeTimer); introFadeTimer = null; } }
+var ANTI_CLICK_STOP_MS=140,antiClickStopTimer=null;
+function clearAntiClickStop(){if(antiClickStopTimer){clearInterval(antiClickStopTimer);antiClickStopTimer=null;}}
+function softStopPlayer(done){
+  if(!player){if(done)done();return;}clearAntiClickStop();clearIntroFade();clearDipFade();
+  if(typeof player.setVolume!=="function"){try{player.pauseVideo&&player.pauseVideo();}catch(e){}if(done)done();return;}
+  var start=Math.max(0,Math.min(100,getCurrentPlayerVolume())),steps=7,step=0;
+  if(start<=0){try{player.setVolume(0);player.pauseVideo&&player.pauseVideo();}catch(e){}if(done)done();return;}
+  antiClickStopTimer=setInterval(function(){
+    step++;var remaining=1-step/steps,v=Math.max(0,Math.round(start*remaining*remaining));
+    try{player.setVolume(v);}catch(e){}
+    if(step>=steps){clearAntiClickStop();try{player.setVolume(0);player.pauseVideo&&player.pauseVideo();}catch(e){}if(done)done();}
+  },Math.max(12,Math.round(ANTI_CLICK_STOP_MS/steps)));
+}
 function fadeToVolume(targetVol, fadeMs, done){
   if(!player || typeof player.setVolume !== "function") { if(done) done(); return; }
   targetVol = Math.max(0, Math.min(100, Math.round(targetVol)));
@@ -1449,6 +1470,7 @@ function getPlayBaselineVolume(){
 }
 function startPlaybackWithSoftIntro(){
   if(!player) return;
+  clearAntiClickStop();
   captureBaseVolume();
   var targetVol = getPlayBaselineVolume();
   var fadeMs = Math.max(0, readDipNumber("dipFadeMs",800));
@@ -1573,8 +1595,8 @@ function loadByIndex(idx, autoStart){
 }
 function handleEnded(){ var ni=nextIndex(); if(ni<0) return; loadByIndex(ni, !bypassToggle.checked); }
 
-function startPlainPlay(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); stopBar(); if(!player) return; captureBaseVolume(); applyDipBaselineForPlay(); scheduleNextDip(); if(isSoftIntro()) startPlaybackWithSoftIntro(); else player.playVideo(); setPlayUI(true,false); }
-function pauseNow(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); restoreNormalVolume(); stopBar(); if(player){ player.pauseVideo(); } if(dimToggle.checked) pauseOverlay.style.display="block"; setPlayUI(false,true); }
+function startPlainPlay(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); clearAntiClickStop(); stopBar(); if(!player) return; captureBaseVolume(); applyDipBaselineForPlay(); scheduleNextDip(); if(isSoftIntro()) startPlaybackWithSoftIntro(); else player.playVideo(); setPlayUI(true,false); }
+function pauseNow(){ stepRunning=false; clearStepTimers(); clearSegTimer(); clearDipTimers(); stopBar(); if(player)softStopPlayer(); if(dimToggle.checked) pauseOverlay.style.display="block"; setPlayUI(false,true); }
 
 var liveCyclePlay=null, liveCyclePause=null;
 function applyWheelTimingLive(target){
@@ -1597,6 +1619,7 @@ function startPlayStepper(){
 
   function cyclePlay(){
     if(!stepRunning) return;
+    clearAntiClickStop();
     var playS=Math.max(1,getPlaySec());
     applyDipBaselineForPlay();
     scheduleNextDip();
@@ -1613,10 +1636,9 @@ if(muteToggle.checked && player && player.unMute){ try{ player.unMute(); }catch(
     if(!stepRunning) return;
     var pauseS=Math.max(1,getPauseSec());
     clearDipTimers();
-    restoreNormalVolume();
     inPauseSegment = true;
     if(muteToggle.checked && player){ try{ if(player.mute) player.mute(); if(player.playVideo) player.playVideo(); }catch(e){} if(dimToggle.checked) pauseOverlay.style.display="block"; }
-    else{ if(player){ if(isSoftIntro()) pauseWithSoftIntro(); else player.pauseVideo(); } if(dimToggle.checked) pauseOverlay.style.display="block"; }
+    else{ if(player)softStopPlayer(); if(dimToggle.checked) pauseOverlay.style.display="block"; }
     setPlayUI(false,true);
     startSegCountdown("pause", pauseS);
     startBar(pauseS, true);   // red
